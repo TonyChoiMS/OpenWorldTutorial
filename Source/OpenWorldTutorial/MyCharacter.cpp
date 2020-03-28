@@ -75,14 +75,22 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMyCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMyCharacter::MoveRight);
 
-	
-	
-	/*PlayerInputComponent->BindAxis("LookUp", this, &AMyCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Turn", this, &AMyCharacter::AddControllerYawInput);*/
+	PlayerInputComponent->BindAxis("LookUp", this, &AMyCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AMyCharacter::AddControllerYawInput);
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMyCharacter::BeginCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AMyCharacter::EndCrouch);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+}
+
+FVector AMyCharacter::GetPawnViewLocation() const
+{
+	if (CameraComp)
+	{
+		return CameraComp->GetComponentLocation();
+	}
+
+	return Super::GetPawnViewLocation();
 }
 

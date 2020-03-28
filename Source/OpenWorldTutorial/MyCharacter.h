@@ -29,7 +29,9 @@ public:
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	// End of APawn interface
+	
+	virtual FVector GetPawnViewLocation() const override;
+		
 
 protected:
 	/** Handles moving forward/backward */
