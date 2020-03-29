@@ -9,6 +9,7 @@
 class UInputComponent;
 class UCameraComponent;
 class USpringArmComponent;
+class ASWeapon;
 
 UCLASS(config=Game)
 class OPENWORLDTUTORIAL_API AMyCharacter : public ACharacter
@@ -50,9 +51,31 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
 
+	bool bWantsToZoom;
 
-	//void AddControllerPitchInput(float val);
-	//void AddControllerYawInput(float val);
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float ZoomedFOV;
+
+	// Default FOV set during begin play
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float DefaultFOV;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player", meta = (ClampMin = 0.1, ClampMax = 100))
+	float ZoomInterpSpeed;
+
+	void BeginZoom();
+
+	void EndZoom();
+
+	ASWeapon* CurrentWeapon;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
+	FName WeaponAttachSocketName;
+	
+	void Fire();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<ASWeapon> StarterWeaponClass;
 
 	/**
 	 * Called via input to turn at a given rate.
