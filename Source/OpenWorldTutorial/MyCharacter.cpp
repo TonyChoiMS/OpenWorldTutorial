@@ -14,6 +14,8 @@
 #include "XRMotionControllerBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "OpenWorldTutorial.h"
 #include "SWeapon.h"
 
 // Sets default values
@@ -27,6 +29,8 @@ AMyCharacter::AMyCharacter()
 	SpringArmComp->SetupAttachment(RootComponent);
 	
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
