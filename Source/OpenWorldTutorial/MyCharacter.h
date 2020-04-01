@@ -71,6 +71,7 @@ protected:
 
 	void EndZoom();
 
+	UPROPERTY(Replicated)
 	ASWeapon* CurrentWeapon;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
