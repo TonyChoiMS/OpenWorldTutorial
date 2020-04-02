@@ -67,6 +67,6 @@ void ASExplosiveBarrel::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(ASExplosiveBarrel, bExploded);
+	DOREPLIFETIME_CONDITION(ASExplosiveBarrel, bExploded, COND_OwnerOnly);
 }
 
