@@ -26,6 +26,9 @@ AMyCharacter::AMyCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
+	HealthComp->OnHealthChanged.AddDynamic(this, &AMyCharacter::OnHealthChanged);
+
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
@@ -33,8 +36,6 @@ AMyCharacter::AMyCharacter()
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
-
-	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
@@ -52,8 +53,6 @@ void AMyCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	DefaultFOV = CameraComp->FieldOfView;
-
-	HealthComp->OnHealthChanged.AddDynamic(this, &AMyCharacter::OnHealthChanged);
 
 	if (Role == ROLE_Authority)
 	{
@@ -129,7 +128,7 @@ void AMyCharacter::StopFire()
 	}
 }
 
-void AMyCharacter::OnHealthChanged(USHealthComponent* HealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, 
+void AMyCharacter::OnHealthChanged(USHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (Health <= 0.0f && !bDied)
