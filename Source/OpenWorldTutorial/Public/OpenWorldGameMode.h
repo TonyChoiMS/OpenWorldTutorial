@@ -16,6 +16,7 @@ class OPENWORLDTUTORIAL_API AOpenWorldGameMode : public AGameModeBase
 	
 protected:
 	FTimerHandle TimerHandle_BotSpawner;
+	FTimerHandle TimerHandle_NextWaveStart;
 
 	// Bots to spawn in current wave
 	int32 NrOfBotsToSpawn;
@@ -38,11 +39,15 @@ protected:
 	// Stop Spawning Bots
 	void EndWave();
 
-	// Set timer for next startwave
+	// Set timer for next start wave
 	void PrepareForNextWave();
+
+	void CheckWaveState();
 	
 public:
 	AOpenWorldGameMode();
 
 	virtual void StartPlay() override;
+
+	virtual void Tick(float DeltaSeconds) override;
 };

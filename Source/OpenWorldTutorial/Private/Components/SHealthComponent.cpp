@@ -51,6 +51,11 @@ void USHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, 
 	OnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 }
 
+float USHealthComponent::GetHealth() const
+{
+	return Health;
+}
+
 void USHealthComponent::Heal(float healAmount)
 {
 	if (healAmount <= 0.0f || Health <= 0.0f)
