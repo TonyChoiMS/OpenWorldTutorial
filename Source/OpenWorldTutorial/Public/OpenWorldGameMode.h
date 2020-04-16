@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "OpenWorldGameMode.generated.h"
 
+enum class EWaveState : uint8;
+
 /**
  * 
  */
@@ -43,6 +45,13 @@ protected:
 	void PrepareForNextWave();
 
 	void CheckWaveState();
+
+	void CheckAnyPlayerAlive();
+
+	void GameOver();
+
+	void SetWaveState(EWaveState NewState);
+
 	
 public:
 	AOpenWorldGameMode();
