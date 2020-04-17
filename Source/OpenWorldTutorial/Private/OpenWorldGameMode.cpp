@@ -4,6 +4,7 @@
 #include "OpenWorldGameMode.h"
 #include "SHealthComponent.h"
 #include "SGameState.h"
+#include "SPlayerState.h"
 #include "TimerManager.h"
 
 AOpenWorldGameMode::AOpenWorldGameMode()
@@ -11,6 +12,7 @@ AOpenWorldGameMode::AOpenWorldGameMode()
 	TimerBetweenWaves = 2.0f;
 
 	GameStateClass = ASGameState::StaticClass();
+	PlayerStateClass = APlayerState::StaticClass();
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.0f;
