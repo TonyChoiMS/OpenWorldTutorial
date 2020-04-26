@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "OpenWorldTutorial.h"
 #include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
 

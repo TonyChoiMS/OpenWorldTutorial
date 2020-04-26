@@ -44,6 +44,8 @@ AMyCharacter::AMyCharacter()
 	ZoomInterpSpeed = 20.0f;
 	WeaponAttachSocketName = "WeaponSocket";
 
+	
+
 	bDied = false;
 }
 

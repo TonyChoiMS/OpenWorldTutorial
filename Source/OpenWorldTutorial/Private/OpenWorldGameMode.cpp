@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "OpenWorldGameMode.h"
 #include "SHealthComponent.h"
 #include "SGameState.h"
 #include "SPlayerState.h"
 #include "TimerManager.h"
+#include "MyCharacter.h"
 
 AOpenWorldGameMode::AOpenWorldGameMode()
 {
@@ -16,6 +16,12 @@ AOpenWorldGameMode::AOpenWorldGameMode()
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.0f;
+
+	static ConstructorHelpers::FClassFinder<APawn> BP_PAWN_C(TEXT("/Game/Character/Human/MyCharacter.MyCharacter"));
+	if (BP_PAWN_C.Succeeded())
+	{
+		DefaultPawnClass = BP_PAWN_C.Class;
+	}
 }
 
 void AOpenWorldGameMode::StartWave()
