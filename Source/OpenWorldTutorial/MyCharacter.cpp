@@ -31,6 +31,8 @@ AMyCharacter::AMyCharacter()
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
+	SpringArmComp->TargetArmLength = 400.0f;
+	SpringArmComp->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
 	SpringArmComp->SetupAttachment(RootComponent);
 	
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
@@ -43,6 +45,8 @@ AMyCharacter::AMyCharacter()
 	ZoomedFOV = 65.0f;
 	ZoomInterpSpeed = 20.0f;
 	WeaponAttachSocketName = "WeaponSocket";
+
+	SetControlMode(0);
 
 	
 
@@ -86,12 +90,13 @@ void AMyCharacter::Tick(float DeltaTime)
 
 void AMyCharacter::MoveForward(float value)
 {
-	AddMovementInput(GetActorForwardVector() * value);
+	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), value);
 }
 
 void AMyCharacter::MoveRight(float value)
 {
-	AddMovementInput(GetActorRightVector() * value);
+	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), value);
+	//AddMovementInput(GetActorRightVector() * value);
 }
 
 void AMyCharacter::BeginCrouch()
@@ -144,6 +149,25 @@ void AMyCharacter::OnHealthChanged(USHealthComponent* OwningHealthComp, float He
 		DetachFromControllerPendingDestroy();
 
 		SetLifeSpan(10.0f);
+	}
+}
+
+void AMyCharacter::SetControlMode(int32 ControlMode)
+{
+	switch (ControlMode)
+	{
+	case 0:
+		SpringArmComp->TargetArmLength = 450.0f;
+		SpringArmComp->SetRelativeRotation(FRotator::ZeroRotator);
+		SpringArmComp->bUsePawnControlRotation = true;
+		SpringArmComp->bInheritPitch = true;
+		SpringArmComp->bInheritRoll = true;
+		SpringArmComp->bInheritYaw = true;
+		SpringArmComp->bDoCollisionTest = true;
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+		break;
 	}
 }
 

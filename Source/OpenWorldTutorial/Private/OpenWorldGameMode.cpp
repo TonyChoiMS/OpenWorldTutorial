@@ -17,7 +17,7 @@ AOpenWorldGameMode::AOpenWorldGameMode()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.0f;
 
-	static ConstructorHelpers::FClassFinder<APawn> BP_PAWN_C(TEXT("/Game/Character/Human/MyCharacter.MyCharacter"));
+	static ConstructorHelpers::FClassFinder<APawn> BP_PAWN_C(TEXT("/Game/Character/Human/BP_MyCharacter.BP_MyCharacter"));
 	if (BP_PAWN_C.Succeeded())
 	{
 		DefaultPawnClass = BP_PAWN_C.Class;

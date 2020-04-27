@@ -4,7 +4,7 @@
 #include "MyPlayerController.h"
 
 
-AMyPlayerController::PostInitializeComponents()
+void AMyPlayerController::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	ABLOG_S(Warning);
