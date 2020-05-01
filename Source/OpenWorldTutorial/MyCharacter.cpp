@@ -46,9 +46,10 @@ AMyCharacter::AMyCharacter()
 	ZoomInterpSpeed = 20.0f;
 	WeaponAttachSocketName = "WeaponSocket";
 
-	SetControlMode(0);
+	ArmLengthSpeed = 3.0f;
+	ArmRotationSpeed = 10.0f;
 
-	
+	SetControlMode(EControlMode::DIABLO);
 
 	bDied = false;
 }
@@ -81,22 +82,75 @@ void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	float TargetFOV = bWantsToZoom ? ZoomedFOV : DefaultFOV;
+	SpringArmComp->TargetArmLength = FMath::FInterpTo(SpringArmComp->TargetArmLength, ArmLengthTo, DeltaTime, ArmLengthSpeed);
 
-	float NewFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
+	switch (CurrentControlMode)
+	{
+	case EControlMode::DIABLO:
+		SpringArmComp->RelativeRotation = FMath::RInterpTo(SpringArmComp->RelativeRotation, ArmRotationTo, DeltaTime, ArmRotationSpeed);
+		if (DirectionToMove.SizeSquared() > 0.0f)
+		{
+			GetController()->SetControlRotation(FRotationMatrix::MakeFromX(DirectionToMove).Rotator());
+			AddMovementInput(DirectionToMove);
+		}
+		break;
 
-	CameraComp->SetFieldOfView(NewFOV);
+	case EControlMode::GTA:
+		float TargetFOV = bWantsToZoom ? ZoomedFOV : DefaultFOV;
+
+		float NewFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
+
+		CameraComp->SetFieldOfView(NewFOV);
+		break;
+	}
 }
 
 void AMyCharacter::MoveForward(float value)
 {
-	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), value);
+	switch (CurrentControlMode)
+	{
+	case EControlMode::GTA:
+		AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), value);
+		break;
+	case EControlMode::DIABLO:
+		DirectionToMove.X = value;
+		break;
+	}
+	
 }
 
 void AMyCharacter::MoveRight(float value)
 {
-	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), value);
+	switch (CurrentControlMode)
+	{
+	case EControlMode::GTA:
+		AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), value);
+		break;
+	case EControlMode::DIABLO:
+		DirectionToMove.Y = value;
+		break;
+	}
 	//AddMovementInput(GetActorRightVector() * value);
+}
+
+void AMyCharacter::LookUp(float Value)
+{
+	switch (CurrentControlMode)
+	{
+	case EControlMode::GTA:
+		AddControllerPitchInput(Value);
+		break;
+	}
+}
+
+void AMyCharacter::Turn(float Value)
+{
+	switch (CurrentControlMode)
+	{
+	case EControlMode::GTA:
+		AddControllerYawInput(Value);
+		break;
+	}
 }
 
 void AMyCharacter::BeginCrouch()
@@ -107,6 +161,21 @@ void AMyCharacter::BeginCrouch()
 void AMyCharacter::EndCrouch()
 {
 	UnCrouch();
+}
+
+void AMyCharacter::ViewChange()
+{
+	switch (CurrentControlMode)
+	{
+	case AMyCharacter::EControlMode::GTA:
+		GetController()->SetControlRotation(GetActorRotation());
+		SetControlMode(EControlMode::DIABLO);
+		break;
+	case AMyCharacter::EControlMode::DIABLO:
+		GetController()->SetControlRotation(SpringArmComp->RelativeRotation);
+		SetControlMode(EControlMode::GTA);
+		break;
+	}
 }
 
 void AMyCharacter::BeginZoom()
@@ -152,13 +221,16 @@ void AMyCharacter::OnHealthChanged(USHealthComponent* OwningHealthComp, float He
 	}
 }
 
-void AMyCharacter::SetControlMode(int32 ControlMode)
+void AMyCharacter::SetControlMode(EControlMode NewControlMode)
 {
-	switch (ControlMode)
+	CurrentControlMode = NewControlMode;
+
+	switch (CurrentControlMode)
 	{
-	case 0:
-		SpringArmComp->TargetArmLength = 450.0f;
-		SpringArmComp->SetRelativeRotation(FRotator::ZeroRotator);
+	case EControlMode::GTA:
+		ArmLengthTo - 450.0f;
+		/*SpringArmComp->TargetArmLength = 450.0f;
+		SpringArmComp->SetRelativeRotation(FRotator::ZeroRotator);*/
 		SpringArmComp->bUsePawnControlRotation = true;
 		SpringArmComp->bInheritPitch = true;
 		SpringArmComp->bInheritRoll = true;
@@ -166,6 +238,23 @@ void AMyCharacter::SetControlMode(int32 ControlMode)
 		SpringArmComp->bDoCollisionTest = true;
 		bUseControllerRotationYaw = false;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->bUseControllerDesiredRotation = false;
+		GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+		break;
+
+	case EControlMode::DIABLO:
+		ArmLengthTo = 800.0f;
+		ArmRotationTo = FRotator(-45.0f, 0.0f, 0.0f);
+		/*SpringArmComp->TargetArmLength = 800.0f;
+		SpringArmComp->SetRelativeRotation(FRotator(-45.0f, 0.0f, 0.0f));*/
+		SpringArmComp->bUsePawnControlRotation = false;
+		SpringArmComp->bInheritPitch = false;
+		SpringArmComp->bInheritRoll = false;
+		SpringArmComp->bInheritYaw = false;
+		SpringArmComp->bDoCollisionTest = false;
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		GetCharacterMovement()->bUseControllerDesiredRotation = true;
 		GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
 		break;
 	}
@@ -176,22 +265,24 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis("MoveForward", this, &AMyCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AMyCharacter::MoveRight);
+	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &AMyCharacter::MoveForward);
+	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &AMyCharacter::MoveRight);
 
-	PlayerInputComponent->BindAxis("LookUp", this, &AMyCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Turn", this, &AMyCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &AMyCharacter::LookUp);
+	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &AMyCharacter::Turn);
 
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMyCharacter::BeginCrouch);
-	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AMyCharacter::EndCrouch);
+	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &AMyCharacter::BeginCrouch);
+	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Released, this, &AMyCharacter::EndCrouch);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ACharacter::Jump);
 	
-	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AMyCharacter::BeginZoom);
-	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &AMyCharacter::EndZoom);
+	PlayerInputComponent->BindAction(TEXT("Zoom"), IE_Pressed, this, &AMyCharacter::BeginZoom);
+	PlayerInputComponent->BindAction(TEXT("Zoom"), IE_Released, this, &AMyCharacter::EndZoom);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMyCharacter::StartFire);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMyCharacter::StopFire);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMyCharacter::StartFire);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMyCharacter::StopFire);
+
+	PlayerInputComponent->BindAction(TEXT("ViewChange"), IE_Released, this, &AMyCharacter::ViewChange);
 }
 
 FVector AMyCharacter::GetPawnViewLocation() const

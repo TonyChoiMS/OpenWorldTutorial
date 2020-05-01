@@ -25,6 +25,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	enum class EControlMode
+	{
+		GTA,
+		DIABLO
+	};
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -42,9 +48,15 @@ protected:
 	/** Handles starting movement, left and right */
 	void MoveRight(float Val);
 
+	void LookUp(float Value);
+
+	void Turn(float Value);
+
 	void BeginCrouch();
 	
 	void EndCrouch();
+
+	void ViewChange();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
@@ -91,7 +103,14 @@ protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
 	bool bDied;
 
-	void SetControlMode(int32 ControlMode);
+	void SetControlMode(EControlMode NewControlMode);
+	EControlMode CurrentControlMode = EControlMode::GTA;
+	FVector DirectionToMove = FVector::ZeroVector;
+
+	float ArmLengthTo = 0.0f;
+	FRotator ArmRotationTo = FRotator::FRotator.ZeroRotator;
+	float ArmLengthSpeed = 0.0f;
+	float ArmRotationSpeed = 0.0f;
 
 	/**
 	 * Called via input to turn at a given rate.
