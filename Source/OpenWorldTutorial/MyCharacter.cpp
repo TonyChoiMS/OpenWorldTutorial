@@ -51,6 +51,8 @@ AMyCharacter::AMyCharacter()
 
 	SetControlMode(EControlMode::DIABLO);
 
+	GetCharacterMovement()->JumpZVelocity = 800.0f;
+
 	bDied = false;
 }
 
@@ -228,7 +230,7 @@ void AMyCharacter::SetControlMode(EControlMode NewControlMode)
 	switch (CurrentControlMode)
 	{
 	case EControlMode::GTA:
-		ArmLengthTo - 450.0f;
+		ArmLengthTo = 450.0f;
 		/*SpringArmComp->TargetArmLength = 450.0f;
 		SpringArmComp->SetRelativeRotation(FRotator::ZeroRotator);*/
 		SpringArmComp->bUsePawnControlRotation = true;
