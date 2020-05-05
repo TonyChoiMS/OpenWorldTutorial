@@ -9,8 +9,6 @@ USHealthComponent::USHealthComponent()
 {
 	DefaultHealth = 100;
 	bIsDead = false;
-
-	SetIsReplicated(true);
 }
 
 // Called when the game starts
@@ -29,6 +27,8 @@ void USHealthComponent::BeginPlay()
 	}
 
 	Health = DefaultHealth;
+
+	SetIsReplicated(true);
 }
 
 void USHealthComponent::OnRep_Health(float OldHealth)

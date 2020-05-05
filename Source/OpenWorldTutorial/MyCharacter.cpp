@@ -16,9 +16,10 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "OpenWorldTutorial.h"
+#include "Net/UnrealNetwork.h"
 #include "SHealthComponent.h"
 #include "SWeapon.h"
-#include "Net/UnrealNetwork.h"
+#include "MyAnimInstance.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -53,7 +54,11 @@ AMyCharacter::AMyCharacter()
 
 	GetCharacterMovement()->JumpZVelocity = 800.0f;
 
+	IsAttacking = false;
 	bDied = false;
+
+	MaxCombo = 4;
+	AttackEndComboState();
 }
 
 // Called when the game starts or when spawned
@@ -63,7 +68,7 @@ void AMyCharacter::BeginPlay()
 	
 	DefaultFOV = CameraComp->FieldOfView;
 
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		// Spawn a default weapon
 		FActorSpawnParameters SpawnParams;
@@ -89,7 +94,7 @@ void AMyCharacter::Tick(float DeltaTime)
 	switch (CurrentControlMode)
 	{
 	case EControlMode::DIABLO:
-		SpringArmComp->RelativeRotation = FMath::RInterpTo(SpringArmComp->RelativeRotation, ArmRotationTo, DeltaTime, ArmRotationSpeed);
+		SpringArmComp->SetRelativeRotation(FMath::RInterpTo(SpringArmComp->GetRelativeRotation(), ArmRotationTo, DeltaTime, ArmRotationSpeed));
 		if (DirectionToMove.SizeSquared() > 0.0f)
 		{
 			GetController()->SetControlRotation(FRotationMatrix::MakeFromX(DirectionToMove).Rotator());
@@ -107,6 +112,27 @@ void AMyCharacter::Tick(float DeltaTime)
 	}
 }
 
+void AMyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	ABAnim = Cast<UMyAnimInstance>(GetMesh()->GetAnimInstance());
+	ABCHECK(nullptr != ABAnim);
+
+	ABAnim->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackMontageEnded);
+
+	ABAnim->OnNextAttackCheck.AddLambda([this]() -> void {
+		ABLOG(Warning, TEXT("OnNextAttackCheck"));
+		CanNextCombo = false;
+
+		if (IsComboInputOn)
+		{
+			AttackStartComboState();
+			ABAnim->JumpToAttackMontageSection(CurrentCombo);
+		}
+	});
+}
+
 void AMyCharacter::MoveForward(float value)
 {
 	switch (CurrentControlMode)
@@ -118,7 +144,6 @@ void AMyCharacter::MoveForward(float value)
 		DirectionToMove.X = value;
 		break;
 	}
-	
 }
 
 void AMyCharacter::MoveRight(float value)
@@ -174,7 +199,7 @@ void AMyCharacter::ViewChange()
 		SetControlMode(EControlMode::DIABLO);
 		break;
 	case AMyCharacter::EControlMode::DIABLO:
-		GetController()->SetControlRotation(SpringArmComp->RelativeRotation);
+		GetController()->SetControlRotation(SpringArmComp->GetRelativeRotation());
 		SetControlMode(EControlMode::GTA);
 		break;
 	}
@@ -192,9 +217,15 @@ void AMyCharacter::EndZoom()
 
 void AMyCharacter::StartFire()
 {
+	if (IsAttacking) return;
+
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->StartFire();
+
+		ABAnim->PlayAttackMontage();
+
+		IsAttacking = true;
 	}
 }
 
@@ -203,6 +234,26 @@ void AMyCharacter::StopFire()
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->StopFire();
+	}
+}
+
+void AMyCharacter::Attack()
+{
+	if (IsAttacking)
+	{
+		ABCHECK(FMath::IsWithinInclusive<int32>(CurrentCombo, 1, MaxCombo));
+		if (CanNextCombo)
+		{
+			IsComboInputOn = true;
+		}
+	}
+	else
+	{
+		ABCHECK(CurrentCombo == 0);
+		AttackStartComboState();
+		ABAnim->PlayAttackMontage();
+		ABAnim->JumpToAttackMontageSection(CurrentCombo);
+		IsAttacking = true;
 	}
 }
 
@@ -260,6 +311,29 @@ void AMyCharacter::SetControlMode(EControlMode NewControlMode)
 		GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
 		break;
 	}
+}
+
+void AMyCharacter::OnAttackMontageEnded(UAnimMontage * Montage, bool bInterreupted)
+{
+	ABCHECK(IsAttacking);
+	ABCHECK(CurrentCombo > 0);
+	IsAttacking = false;
+	AttackEndComboState();
+}
+
+void AMyCharacter::AttackStartComboState()
+{
+	CanNextCombo = true;
+	IsComboInputOn = false;
+	ABCHECK(FMath::IsWithinInclusive<int32>(CurrentCombo, 0, MaxCombo - 1));
+	CurrentCombo = FMath::Clamp<int32>(CurrentCombo + 1, 1, MaxCombo);
+}
+
+void AMyCharacter::AttackEndComboState()
+{
+	IsComboInputOn = false;
+	CanNextCombo = false;
+	CurrentCombo = 0;
 }
 
 // Called to bind functionality to input

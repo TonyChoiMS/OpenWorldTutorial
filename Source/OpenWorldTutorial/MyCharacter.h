@@ -11,6 +11,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class ASWeapon;
 class USHealthComponent;
+class UAnimMontage;
 
 UCLASS(config=Game)
 class OPENWORLDTUTORIAL_API AMyCharacter : public ACharacter
@@ -34,6 +35,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void PostInitializeComponents() override;
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
@@ -96,6 +99,8 @@ protected:
 
 	void StopFire();
 
+	void Attack();
+
 	UFUNCTION()
 	void OnHealthChanged(USHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
@@ -124,4 +129,30 @@ protected:
 	 */
 	//void LookUpAtRate(float Rate);
 
+private:
+
+	UFUNCTION()
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterreupted);
+
+	void AttackStartComboState();
+	void AttackEndComboState();
+
+private:
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+	bool IsAttacking;
+
+	UPROPERTY()
+	class UMyAnimInstance* ABAnim;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+	bool CanNextCombo;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+	bool IsComboInputOn;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+	int32 CurrentCombo;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+	int32 MaxCombo;
 };

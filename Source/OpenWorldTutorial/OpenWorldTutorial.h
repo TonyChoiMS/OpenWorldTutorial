@@ -13,3 +13,5 @@ DECLARE_LOG_CATEGORY_EXTERN(OpenWorldTutorial, Log, All);
 #define SURFACE_FLESHVULNERABLE		SurfaceType2
 
 #define COLLISION_WEAPON			ECC_GameTraceChannel1
+
+#define ABCHECK(Expr, ...) { if (!(Expr)) { ABLOG(Error, TEXT("ASSERTION : %s"), TEXT("'"#Expr"'")); return __VA_ARGS__; } }
