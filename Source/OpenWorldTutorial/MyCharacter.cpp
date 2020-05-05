@@ -20,6 +20,7 @@
 #include "SHealthComponent.h"
 #include "SWeapon.h"
 #include "MyAnimInstance.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -59,6 +60,11 @@ AMyCharacter::AMyCharacter()
 
 	MaxCombo = 4;
 	AttackEndComboState();
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("ABCharacter"));
+
+	AttackRange = 200.0f;
+	AttackRadius = 50.0f;
 }
 
 // Called when the game starts or when spawned
@@ -74,13 +80,13 @@ void AMyCharacter::BeginPlay()
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		CurrentWeapon = GetWorld()->SpawnActor<ASWeapon>(StarterWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		/*CurrentWeapon = GetWorld()->SpawnActor<ASWeapon>(StarterWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 
 		if (CurrentWeapon)
 		{
 			CurrentWeapon->SetOwner(this);
 			CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponAttachSocketName);
-		}
+		}*/
 	}
 }
 
@@ -131,6 +137,8 @@ void AMyCharacter::PostInitializeComponents()
 			ABAnim->JumpToAttackMontageSection(CurrentCombo);
 		}
 	});
+
+	ABAnim->OnAttackHitCheck.AddUObject(this, &AMyCharacter::AttackCheck);
 }
 
 void AMyCharacter::MoveForward(float value)
@@ -219,22 +227,24 @@ void AMyCharacter::StartFire()
 {
 	if (IsAttacking) return;
 
-	if (CurrentWeapon)
+	ABAnim->PlayAttackMontage();
+
+	IsAttacking = true;
+
+	/*if (CurrentWeapon)
 	{
 		CurrentWeapon->StartFire();
 
-		ABAnim->PlayAttackMontage();
 
-		IsAttacking = true;
-	}
+	}*/
 }
 
 void AMyCharacter::StopFire()
 {
-	if (CurrentWeapon)
+	/*if (CurrentWeapon)
 	{
 		CurrentWeapon->StopFire();
-	}
+	}*/
 }
 
 void AMyCharacter::Attack()
@@ -336,6 +346,46 @@ void AMyCharacter::AttackEndComboState()
 	CurrentCombo = 0;
 }
 
+void AMyCharacter::AttackCheck()
+{
+	FHitResult HitResult;
+	FCollisionQueryParams Params(NAME_None, false, this);
+	bool bResult = GetWorld()->SweepSingleByChannel(
+		HitResult, 
+		GetActorLocation(), 
+		GetActorLocation() + GetActorForwardVector() * 200.0f, 
+		FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, 
+		FCollisionShape::MakeSphere(50.0f), 
+		Params);
+
+#if ENABLE_DRAW_DEBUG
+	FVector TraceVec = GetActorForwardVector() * AttackRange;
+	FVector Center = GetActorLocation() + TraceVec * 0.5f;
+	float HalfHeight = AttackRange * 0.5f + AttackRadius;
+	FQuat CapsuleRot = FRotationMatrix::MakeFromZ(TraceVec).ToQuat();
+	FColor DrawColor = bResult ? FColor::Green : FColor::Red;
+	float DebugLifeTime = 5.0f;
+
+	DrawDebugCapsule(GetWorld(),
+		Center,
+		HalfHeight,
+		AttackRadius,
+		CapsuleRot,
+		DrawColor,
+		false,
+		DebugLifeTime
+		);
+#endif
+
+	if (bResult)
+	{
+		if (HitResult.Actor.IsValid())
+		{
+			ABLOG(Warning, TEXT("Hit Actor Name : %s"), *HitResult.Actor->GetName());
+		}
+	}
+}
+
 // Called to bind functionality to input
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -355,8 +405,8 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction(TEXT("Zoom"), IE_Pressed, this, &AMyCharacter::BeginZoom);
 	PlayerInputComponent->BindAction(TEXT("Zoom"), IE_Released, this, &AMyCharacter::EndZoom);
 
-	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMyCharacter::StartFire);
-	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMyCharacter::StopFire);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMyCharacter::Attack);
+	//PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMyCharacter::StopFire);
 
 	PlayerInputComponent->BindAction(TEXT("ViewChange"), IE_Released, this, &AMyCharacter::ViewChange);
 }

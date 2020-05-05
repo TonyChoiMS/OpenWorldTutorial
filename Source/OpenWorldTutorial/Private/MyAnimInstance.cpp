@@ -10,7 +10,7 @@ UMyAnimInstance::UMyAnimInstance()
 	CurrentPawnSpeed = 0.0f;
 	bIsInAir = false;
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE(TEXT("/Game/Animations/Montage_Idle.Montage_Idle"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE(TEXT("/Game/Animations/Montage_WarriorAttack.Montage_WarriorAttack"));
 
 	if (ATTACK_MONTAGE.Succeeded())
 	{

@@ -136,6 +136,7 @@ private:
 
 	void AttackStartComboState();
 	void AttackEndComboState();
+	void AttackCheck();
 
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
@@ -155,4 +156,10 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
 	int32 MaxCombo;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+	float AttackRange;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+	float AttackRadius;
 };
