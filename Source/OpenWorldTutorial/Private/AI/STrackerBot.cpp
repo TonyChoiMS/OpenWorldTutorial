@@ -249,4 +249,3 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor * OtherActor)
 		}
 	}
 }
-
