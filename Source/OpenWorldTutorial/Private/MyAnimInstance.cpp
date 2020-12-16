@@ -9,6 +9,7 @@ UMyAnimInstance::UMyAnimInstance()
 {
 	CurrentPawnSpeed = 0.0f;
 	bIsInAir = false;
+	IsDead = false;
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE(TEXT("/Game/Animations/Montage_WarriorAttack.Montage_WarriorAttack"));
 
@@ -23,7 +24,11 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaSecond)
 	Super::NativeUpdateAnimation(DeltaSecond);
 
 	auto Pawn = TryGetPawnOwner();
-	if (::IsValid(Pawn))
+
+	if (!::IsValid(Pawn))
+		return;
+
+	if (!IsDead)
 	{
 		CurrentPawnSpeed = Pawn->GetVelocity().Size();
 		auto Character = Cast<ACharacter>(Pawn);
@@ -36,11 +41,13 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaSecond)
 
 void UMyAnimInstance::PlayAttackMontage()
 {
+	ABCHECK(!IsDead);
 	Montage_Play(AttackMontage, 1.0f);
 }
 
 void UMyAnimInstance::JumpToAttackMontageSection(int32 NewSection)
 {
+	ABCHECK(!IsDead);
 	ABCHECK(Montage_IsPlaying(AttackMontage));
 	Montage_JumpToSection(GetAttackMontageSectionName(NewSection), AttackMontage);
 }

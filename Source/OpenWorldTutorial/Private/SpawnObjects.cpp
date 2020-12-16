@@ -22,8 +22,11 @@ ASpawnObjects::ASpawnObjects()
 void ASpawnObjects::BeginPlay()
 {
 	Super::BeginPlay();
-
 	GetWorldTimerManager().SetTimer(SpawnCooldownTimer, this, &ASpawnObjects::Spawn, SpawnCooldown, false);
+}
+
+void ASpawnObjects::Tick(float DeltaTime)
+{
 }
 
 void ASpawnObjects::Spawn()
@@ -32,7 +35,7 @@ void ASpawnObjects::Spawn()
 	AObjectWithinPool* PoolableActor = ObjectPooler->GetPooledObject();
 	if (PoolableActor == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Cannot Spawn"));
+		//UE_LOG(LogTemp, Warning, TEXT("Cannot Spawn"));
 		GetWorldTimerManager().SetTimer(SpawnCooldownTimer, this, &ASpawnObjects::Spawn, SpawnCooldown, false);
 		return;
 	}
@@ -42,6 +45,6 @@ void ASpawnObjects::Spawn()
 	PoolableActor->SetActive(true);
 	PoolableActor->SetActorRotation(myCharacter->GetActorRotation());
 	GetWorldTimerManager().SetTimer(SpawnCooldownTimer, this, &ASpawnObjects::Spawn, SpawnCooldown, false);
-	UE_LOG(LogTemp, Warning, TEXT("Spawning"));
+	//UE_LOG(LogTemp, Warning, TEXT("Spawning"));
 }
 

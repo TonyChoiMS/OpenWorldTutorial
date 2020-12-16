@@ -28,7 +28,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	float GetLifeSpan();
 	class UBoxComponent* SpawnVolume;
 
 	UPROPERTY(EditAnywhere, Category="Spawner")

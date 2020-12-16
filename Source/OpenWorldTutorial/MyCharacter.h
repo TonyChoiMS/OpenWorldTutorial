@@ -42,6 +42,7 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	
 	virtual FVector GetPawnViewLocation() const override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 		
 
 protected:
