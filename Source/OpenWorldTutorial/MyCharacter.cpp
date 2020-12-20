@@ -46,10 +46,24 @@ AMyCharacter::AMyCharacter()
 
 	ZoomedFOV = 65.0f;
 	ZoomInterpSpeed = 20.0f;
-	WeaponAttachSocketName = "WeaponSocket";
 
 	ArmLengthSpeed = 3.0f;
 	ArmRotationSpeed = 10.0f;
+
+	FName WeaponSocket(TEXT("hand_rSocket"));
+
+	if (GetMesh()->DoesSocketExist(WeaponSocket))
+	{
+		Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WEAPON"));
+		static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_WEAPON(TEXT("/Game/InfinityBladeWeapons/Weapons/Blade/Swords/Blade_BlackKnight/SK_Blade_BlackKnight.SK_Blade_BlackKnight"));
+
+		if (SK_WEAPON.Succeeded())
+		{
+			Weapon->SetSkeletalMesh(SK_WEAPON.Object);
+		}
+
+		Weapon->SetupAttachment(GetMesh(), WeaponSocket);
+	}
 
 	SetControlMode(EControlMode::DIABLO);
 
