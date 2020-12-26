@@ -50,6 +50,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 	class AABWeapon* CurrentWeapon;
 
+	UPROPERTY(VisibleAnywhere, Category = Stat)
+	class UCharacterStatComponent* CharacterStat;
+
 protected:
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);

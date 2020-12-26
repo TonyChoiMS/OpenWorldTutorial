@@ -18,6 +18,7 @@
 #include "OpenWorldTutorial.h"
 #include "Net/UnrealNetwork.h"
 #include "SHealthComponent.h"
+#include "CharacterStatComponent.h"
 #include "ABWeapon.h"
 #include "MyAnimInstance.h"
 #include "DrawDebugHelpers.h"
@@ -36,6 +37,7 @@ AMyCharacter::AMyCharacter()
 	SpringArmComp->TargetArmLength = 400.0f;
 	SpringArmComp->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
 	SpringArmComp->SetupAttachment(RootComponent);
+	CharacterStat = CreateDefaultSubobject<UCharacterStatComponent>(TEXT("CharacterStat"));
 	
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
@@ -146,6 +148,12 @@ void AMyCharacter::PostInitializeComponents()
 	});
 
 	ABAnim->OnAttackHitCheck.AddUObject(this, &AMyCharacter::AttackCheck);
+
+	CharacterStat->OnHPIsZero.AddLambda([this]() -> void {
+		ABLOG(Warning, TEXT("OnHPIsZero"));
+		ABAnim->SetDeadAnim();
+		SetActorEnableCollision(false);
+	});
 }
 
 void AMyCharacter::MoveForward(float value)
@@ -391,7 +399,7 @@ void AMyCharacter::AttackCheck()
 			ABLOG(Warning, TEXT("Hit Actor Name : %s"), *HitResult.Actor->GetName());
 
 			FDamageEvent DamageEvent;
-			HitResult.Actor->TakeDamage(50.0f, DamageEvent, GetController(), this);
+			HitResult.Actor->TakeDamage(CharacterStat->GetAttack(), DamageEvent, GetController(), this);
 		}
 	}
 }
@@ -436,11 +444,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	ABLOG(Warning, TEXT("Actor : %s took Damage : %f"), *GetName(), FinalDamage);
 
-	if (FinalDamage > 0.0f)
-	{
-		ABAnim->SetDeadAnim();
-		SetActorEnableCollision(false);
-	}
+	CharacterStat->SetDamage(FinalDamage);
 	return FinalDamage;
 }
 
