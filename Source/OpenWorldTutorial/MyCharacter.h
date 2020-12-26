@@ -9,7 +9,7 @@
 class UInputComponent;
 class UCameraComponent;
 class USpringArmComponent;
-class ASWeapon;
+//class ASWeapon;
 class USHealthComponent;
 class UAnimMontage;
 
@@ -44,6 +44,11 @@ public:
 	virtual FVector GetPawnViewLocation() const override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 		
+	bool CanSetWeapon();
+	void SetWeapon(class AABWeapon* NewWeapon);
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+	class AABWeapon* CurrentWeapon;
 
 protected:
 	/** Handles moving forward/backward */
@@ -90,11 +95,12 @@ protected:
 
 	void EndZoom();
 
-	UPROPERTY(Replicated)
-	ASWeapon* CurrentWeapon;
+	// ASWeapon은 FPS할 때 사용하던 Weapon
+	/*UPROPERTY(Replicated)
+	ASWeapon* CurrentWeapon;*/
 
-	UPROPERTY(EditDefaultsOnly, Category = "Player")
-	TSubclassOf<ASWeapon> StarterWeaponClass;
+	/*UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<ASWeapon> StarterWeaponClass;*/
 
 	void StartFire();
 

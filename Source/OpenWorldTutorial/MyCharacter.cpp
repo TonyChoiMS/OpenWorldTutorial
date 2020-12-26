@@ -444,11 +444,28 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 	return FinalDamage;
 }
 
+bool AMyCharacter::CanSetWeapon()
+{
+	return (nullptr == CurrentWeapon);
+}
+
+void AMyCharacter::SetWeapon(AABWeapon * NewWeapon)
+{
+	ABCHECK(nullptr != NewWeapon && nullptr == CurrentWeapon);
+	FName WeaponSocket(TEXT("hand_rSocket"));
+	if (nullptr != NewWeapon)
+	{
+		NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+		NewWeapon->SetOwner(this);
+		CurrentWeapon = NewWeapon;
+	}
+}
+
 void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AMyCharacter, CurrentWeapon);
+	//DOREPLIFETIME(AMyCharacter, CurrentWeapon);
 	DOREPLIFETIME(AMyCharacter, bDied);
 }
 
