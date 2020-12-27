@@ -15,6 +15,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components//WidgetComponent.h"
 #include "OpenWorldTutorial.h"
 #include "Net/UnrealNetwork.h"
 #include "SHealthComponent.h"
@@ -22,6 +23,7 @@
 #include "ABWeapon.h"
 #include "MyAnimInstance.h"
 #include "DrawDebugHelpers.h"
+#include "CharacterWidget.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -38,6 +40,7 @@ AMyCharacter::AMyCharacter()
 	SpringArmComp->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
 	SpringArmComp->SetupAttachment(RootComponent);
 	CharacterStat = CreateDefaultSubobject<UCharacterStatComponent>(TEXT("CharacterStat"));
+	HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBARWIDGET"));
 	
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
@@ -45,6 +48,8 @@ AMyCharacter::AMyCharacter()
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
+
+	HPBarWidget->SetupAttachment(GetMesh());
 
 	ZoomedFOV = 65.0f;
 	ZoomInterpSpeed = 20.0f;
@@ -66,6 +71,16 @@ AMyCharacter::AMyCharacter()
 
 	AttackRange = 200.0f;
 	AttackRadius = 50.0f;
+
+	HPBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("/Game/UI/WBP_HealthIndicator.WBP_HealthIndicator_C"));
+
+	if (UI_HUD.Succeeded())
+	{
+		HPBarWidget->SetWidgetClass(UI_HUD.Class);
+		HPBarWidget->SetDrawSize(FVector2D(150.0f, 50.0f));
+	}
 }
 
 // Called when the game starts or when spawned
@@ -154,6 +169,17 @@ void AMyCharacter::PostInitializeComponents()
 		ABAnim->SetDeadAnim();
 		SetActorEnableCollision(false);
 	});
+	ABCHECK(nullptr != HPBarWidget);
+	// UserWidget이 초기화되지 않았을 경우 GetUserWidgetObject()이 null을 반환하는 케이스가 생기기 때문에
+	// 캐스팅 하기 전에 InitWidget()을 호출해서 정상적으로 캐스팅 되도록 추가.
+	HPBarWidget->InitWidget();
+	
+	auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+	ABCHECK(nullptr != CharacterWidget)
+	if (nullptr != CharacterWidget)
+	{
+		CharacterWidget->BindCharacterStat(CharacterStat);
+	}
 }
 
 void AMyCharacter::MoveForward(float value)
@@ -236,30 +262,6 @@ void AMyCharacter::BeginZoom()
 void AMyCharacter::EndZoom()
 {
 	bWantsToZoom = false;
-}
-
-void AMyCharacter::StartFire()
-{
-	if (IsAttacking) return;
-
-	ABAnim->PlayAttackMontage();
-
-	IsAttacking = true;
-
-	/*if (CurrentWeapon)
-	{
-		CurrentWeapon->StartFire();
-
-
-	}*/
-}
-
-void AMyCharacter::StopFire()
-{
-	/*if (CurrentWeapon)
-	{
-		CurrentWeapon->StopFire();
-	}*/
 }
 
 void AMyCharacter::Attack()
@@ -424,7 +426,6 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction(TEXT("Zoom"), IE_Released, this, &AMyCharacter::EndZoom);
 
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMyCharacter::Attack);
-	//PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMyCharacter::StopFire);
 
 	PlayerInputComponent->BindAction(TEXT("ViewChange"), IE_Released, this, &AMyCharacter::ViewChange);
 }

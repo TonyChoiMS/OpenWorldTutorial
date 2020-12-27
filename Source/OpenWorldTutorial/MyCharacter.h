@@ -53,6 +53,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Stat)
 	class UCharacterStatComponent* CharacterStat;
 
+	UPROPERTY(VisibleAnywhere, Category = UI)
+	class UWidgetComponent* HPBarWidget;
+
 protected:
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -104,10 +107,6 @@ protected:
 
 	/*UPROPERTY(EditDefaultsOnly, Category = "Player")
 	TSubclassOf<ASWeapon> StarterWeaponClass;*/
-
-	void StartFire();
-
-	void StopFire();
 
 	void Attack();
 
