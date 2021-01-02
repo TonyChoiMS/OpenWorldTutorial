@@ -24,6 +24,7 @@
 #include "MyAnimInstance.h"
 #include "DrawDebugHelpers.h"
 #include "CharacterWidget.h"
+#include "MonsterAIController.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -81,6 +82,9 @@ AMyCharacter::AMyCharacter()
 		HPBarWidget->SetWidgetClass(UI_HUD.Class);
 		HPBarWidget->SetDrawSize(FVector2D(150.0f, 50.0f));
 	}
+
+	AIControllerClass = AMonsterAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 // Called when the game starts or when spawned
@@ -101,17 +105,8 @@ void AMyCharacter::BeginPlay()
 		auto CurWeapon = GetWorld()->SpawnActor<AABWeapon>(FVector::ZeroVector, FRotator::ZeroRotator);
 		if (nullptr != CurWeapon)
 		{
-
 			CurWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
 		}
-
-		/*	CurrentWeapon = GetWorld()->SpawnActor<ASWeapon>(StarterWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-
-			if (CurrentWeapon)
-			{
-				CurrentWeapon->SetOwner(this);
-				CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponAttachSocketName);
-			}*/
 	}
 }
 
@@ -206,7 +201,6 @@ void AMyCharacter::MoveRight(float value)
 		DirectionToMove.Y = value;
 		break;
 	}
-	//AddMovementInput(GetActorRightVector() * value);
 }
 
 void AMyCharacter::LookUp(float Value)
@@ -337,6 +331,13 @@ void AMyCharacter::SetControlMode(EControlMode NewControlMode)
 		GetCharacterMovement()->bUseControllerDesiredRotation = true;
 		GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
 		break;
+
+	case EControlMode::NPC:
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bUseControllerDesiredRotation = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->RotationRate = FRotator(0.0f, 480.0f, 0.0f);
+		break;
 	}
 }
 
@@ -447,6 +448,22 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 
 	CharacterStat->SetDamage(FinalDamage);
 	return FinalDamage;
+}
+
+void AMyCharacter::PossessedBy(AController * NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (IsPlayerControlled())
+	{
+		SetControlMode(EControlMode::DIABLO);
+		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	}
+	else
+	{
+		SetControlMode(EControlMode::NPC);
+		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+	}
 }
 
 bool AMyCharacter::CanSetWeapon()

@@ -29,7 +29,8 @@ protected:
 	enum class EControlMode
 	{
 		GTA,
-		DIABLO
+		DIABLO,
+		NPC
 	};
 
 public:	
@@ -43,6 +44,7 @@ public:
 	
 	virtual FVector GetPawnViewLocation() const override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void PossessedBy(AController* NewController) override;
 		
 	bool CanSetWeapon();
 	void SetWeapon(class AABWeapon* NewWeapon);
