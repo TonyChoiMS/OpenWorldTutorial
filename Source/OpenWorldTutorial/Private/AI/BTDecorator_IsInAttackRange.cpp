@@ -21,7 +21,7 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 		return false;
 
 	auto Target = Cast<AMyCharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AMonsterAIController::TargetKey));
-
+	//ABLOG(Warning, TEXT("%s"), Target);
 	if (nullptr == Target)
 		return false;
 

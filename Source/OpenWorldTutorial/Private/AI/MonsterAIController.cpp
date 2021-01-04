@@ -17,6 +17,13 @@ AMonsterAIController::AMonsterAIController()
 	{
 		BBAsset = BBObject.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BTObject(TEXT("/Game/BP/AdvancedAI/BT_AdvancedAI.BT_AdvancedAI"));
+
+	if (BTObject.Succeeded())
+	{
+		BTAsset = BTObject.Object;
+	}
 }
 
 void AMonsterAIController::OnPossess(APawn * InPawn)
