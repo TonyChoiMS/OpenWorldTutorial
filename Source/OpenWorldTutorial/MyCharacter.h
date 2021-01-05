@@ -13,6 +13,8 @@ class USpringArmComponent;
 class USHealthComponent;
 class UAnimMontage;
 
+DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
+
 UCLASS(config=Game)
 class OPENWORLDTUTORIAL_API AMyCharacter : public ACharacter
 {
@@ -58,6 +60,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = UI)
 	class UWidgetComponent* HPBarWidget;
 
+	void Attack();
+	FOnAttackEndDelegate OnAttackEnd;
+
 protected:
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -102,15 +107,6 @@ protected:
 	void BeginZoom();
 
 	void EndZoom();
-
-	// ASWeapon은 FPS할 때 사용하던 Weapon
-	/*UPROPERTY(Replicated)
-	ASWeapon* CurrentWeapon;*/
-
-	/*UPROPERTY(EditDefaultsOnly, Category = "Player")
-	TSubclassOf<ASWeapon> StarterWeaponClass;*/
-
-	void Attack();
 
 	UFUNCTION()
 	void OnHealthChanged(USHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);

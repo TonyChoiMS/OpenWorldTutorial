@@ -347,6 +347,8 @@ void AMyCharacter::OnAttackMontageEnded(UAnimMontage * Montage, bool bInterreupt
 	ABCHECK(CurrentCombo > 0);
 	IsAttacking = false;
 	AttackEndComboState();
+
+	OnAttackEnd.Broadcast();
 }
 
 void AMyCharacter::AttackStartComboState()
