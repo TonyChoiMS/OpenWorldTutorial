@@ -5,6 +5,7 @@
 #include "OpenWorldTutorial.h"
 #include "Engine/DataTable.h"
 #include "Engine/GameInstance.h"
+#include "Engine/StreamableManager.h"
 #include "OpenWorldGameInstance.generated.h"
 
 // 언리얼에서 구조체를 생성할 때, 언리얼이 지정한 규칙에 따라줘야 에디터 인터페이스에서 연동해서 사용할 수 있다.
@@ -45,6 +46,8 @@ public:
 
 	virtual void Init() override;
 	FABCharacterData* GetABCharacterData(int32 Level);
+
+	FStreamableManager StreamableManager;
 
 private:
 	UPROPERTY()

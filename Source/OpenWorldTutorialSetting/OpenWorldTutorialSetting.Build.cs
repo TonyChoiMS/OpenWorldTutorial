@@ -2,15 +2,15 @@
 
 using UnrealBuildTool;
 
-public class OpenWorldTutorial : ModuleRules
+public class OpenWorldTutorialSetting : ModuleRules
 {
-	public OpenWorldTutorial(ReadOnlyTargetRules Target) : base(Target)
+	public OpenWorldTutorialSetting(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "UMG", "AIModule", "GameplayTasks" });
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "OpenWorldTutorialSetting" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine" });
+
+		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

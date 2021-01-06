@@ -25,6 +25,8 @@
 #include "DrawDebugHelpers.h"
 #include "CharacterWidget.h"
 #include "MonsterAIController.h"
+#include "ABCharacterSetting.h"
+#include "OpenWorldGameInstance.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -106,6 +108,19 @@ void AMyCharacter::BeginPlay()
 		if (nullptr != CurWeapon)
 		{
 			CurWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+		}
+	}
+
+	if (!IsPlayerControlled())
+	{
+		auto DefaultSetting = GetDefault<UABCharacterSetting>();
+		int32 RandIndex = FMath::RandRange(0, DefaultSetting->CharacterAssets.Num() - 1);
+		CharacterAssetToLoad = DefaultSetting->CharacterAssets[RandIndex];
+
+		auto OpenWorldGameInstance = Cast<UOpenWorldGameInstance>(GetGameInstance());
+		if (nullptr != OpenWorldGameInstance)
+		{
+			AssetStreamingHandle = OpenWorldGameInstance->StreamableManager.RequestAsyncLoad(CharacterAssetToLoad, FStreamableDelegate::CreateUObject(this, &AMyCharacter::OnAssetLoadCompleted));
 		}
 	}
 }
@@ -406,6 +421,17 @@ void AMyCharacter::AttackCheck()
 			FDamageEvent DamageEvent;
 			HitResult.Actor->TakeDamage(CharacterStat->GetAttack(), DamageEvent, GetController(), this);
 		}
+	}
+}
+
+void AMyCharacter::OnAssetLoadCompleted()
+{
+	AssetStreamingHandle->ReleaseHandle();
+
+	TSoftObjectPtr<USkeletalMesh> LoadedAssetPath(CharacterAssetToLoad);
+	if (LoadedAssetPath->IsValidLowLevel())
+	{
+		GetMesh()->SetSkeletalMesh(LoadedAssetPath.Get());
 	}
 }
 

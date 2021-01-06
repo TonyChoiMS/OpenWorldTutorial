@@ -9,6 +9,6 @@ public class OpenWorldTutorialTarget : TargetRules
 	{
 		Type = TargetType.Game;
 
-		ExtraModuleNames.AddRange( new string[] { "OpenWorldTutorial" } );
+		ExtraModuleNames.AddRange( new string[] { "OpenWorldTutorial", "OpenWorldTutorialSetting" } );
 	}
 }

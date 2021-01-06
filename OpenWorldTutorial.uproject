@@ -3,16 +3,22 @@
 	"EngineAssociation": "4.25",
 	"Category": "",
 	"Description": "",
-	"Modules": [
-		{
-			"Name": "OpenWorldTutorial",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"UMG",
-				"AIModule"
-			]
-		}
-	]
+  "Modules": [
+    {
+      "Name": "OpenWorldTutorialSetting",
+      "Type": "Runtime",
+      "LoadingPhase":  "PreDefault"
+    },
+    {
+      "Name": "OpenWorldTutorial",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "AdditionalDependencies": [
+        "Engine",
+        "UMG",
+        "AIModule",
+        "OpenWorldTutorialSetting"
+      ]
+    }
+  ]
 }
