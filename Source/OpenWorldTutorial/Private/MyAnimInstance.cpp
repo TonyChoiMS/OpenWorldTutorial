@@ -27,10 +27,10 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaSecond)
 
 	if (!::IsValid(Pawn))
 		return;
-
+	
 	if (!IsDead)
 	{
-		CurrentPawnSpeed = Pawn->GetVelocity().Size();
+		CurrentPawnSpeed = Pawn->GetVelocity().Size2D();			// Size()를 쓰면 점프를 하는 것도 이동한다고 판단하기 때문에 쓰면안됨.
 		auto Character = Cast<ACharacter>(Pawn);
 		if (Character)
 		{
