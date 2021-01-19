@@ -24,6 +24,7 @@
 #include "MonsterAIController.h"
 #include "ABCharacterSetting.h"
 #include "OpenWorldGameInstance.h"
+#include "MyPlayerController.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -84,6 +85,13 @@ AMyCharacter::AMyCharacter()
 
 	AIControllerClass = AMonsterAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	AssetIndex = 4;
+
+	// Init이 완료되기 전엔 Hidden
+	SetActorHiddenInGame(true);
+	HPBarWidget->SetHiddenInGame(true);
+	//bCanBeDamaged = false;		엔진 업데이트에 따라 해당 변수가 private이 됨.
 }
 
 // Called when the game starts or when spawned
