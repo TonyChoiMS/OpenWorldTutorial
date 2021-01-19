@@ -30,6 +30,8 @@ private:
 	UFUNCTION()
 	void OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
 
+	void OnNPCSpawn();
+
 public:	
 	// Sets default values for this actor's properties
 	ASection();
@@ -56,4 +58,13 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = State, Meta = (AllowPrivateAccess = true))
 	bool bNoBattle;
+
+	UPROPERTY(EditAnywhere, Category = Spawn, Meta = (AllowPrivateAccess = true))
+	float EnemySpawnTime;
+
+	UPROPERTY(EditAnywhere, Category = Spawn, Meta = (AllowPrivateAccess = true))
+	float ItemBoxSpawnTime;
+
+	FTimerHandle SpawnNPCTimerHandle = {};
+	FTimerHandle SpawnItemBoxTimerHandle = {};
 };

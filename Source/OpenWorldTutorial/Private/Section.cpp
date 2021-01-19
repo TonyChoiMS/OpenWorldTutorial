@@ -2,6 +2,8 @@
 
 
 #include "Section.h"
+#include "MyCharacter.h"
+#include "ABItemBox.h"
 
 // Sets default values
 ASection::ASection()
@@ -59,6 +61,9 @@ ASection::ASection()
 	}
 
 	bNoBattle = false;
+
+	EnemySpawnTime = 2.0f;
+	ItemBoxSpawnTime = 5.0f;
 }
 
 // Called when the game starts or when spawned
@@ -89,6 +94,17 @@ void ASection::SetState(ESectionState NewState)
 			GateTrigger->SetCollisionProfileName(TEXT("NoCollision"));
 		}
 		OperateGates(false);
+
+		GetWorld()->GetTimerManager().SetTimer(SpawnNPCTimerHandle,
+			FTimerDelegate::CreateUObject(this, &ASection::OnNPCSpawn), EnemySpawnTime, false);
+
+		GetWorld()->GetTimerManager().SetTimer(SpawnItemBoxTimerHandle,
+			FTimerDelegate::CreateLambda([this]() -> void 
+		{
+			FVector2D RandXY = FMath::RandPointInCircle(600.0f);
+			GetWorld()->SpawnActor<AABItemBox>(GetActorLocation() + FVector(RandXY, 30.0f), FRotator::ZeroRotator);
+		}), ItemBoxSpawnTime, false);
+
 		break;
 	case ESectionState::COMPLETE:
 		Trigger->SetCollisionProfileName(TEXT("NoCollision"));
@@ -149,6 +165,11 @@ void ASection::OnGateTriggerBeginOverlap(UPrimitiveComponent * OverlappedCompone
 	{
 		ABLOG(Warning, TEXT("New section Area is not empty"));
 	}
+}
+
+void ASection::OnNPCSpawn()
+{
+	GetWorld()->SpawnActor<AMyCharacter>(GetActorLocation() + FVector::UpVector * 88.0f, FRotator::ZeroRotator);
 }
 
 void ASection::OnConstruction(const FTransform& Transform)
