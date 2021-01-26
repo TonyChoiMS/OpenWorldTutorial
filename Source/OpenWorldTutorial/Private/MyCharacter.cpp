@@ -92,6 +92,87 @@ AMyCharacter::AMyCharacter()
 	SetActorHiddenInGame(true);
 	HPBarWidget->SetHiddenInGame(true);
 	//bCanBeDamaged = false;		엔진 업데이트에 따라 해당 변수가 private이 됨.
+
+	DeadTimer = 5.0f;
+}
+
+void AMyCharacter::SetCharacterState(ECharacterState NewState)
+{
+	ABCHECK(CurrentState != NewState);
+	CurrentState = NewState;
+
+	switch (CurrentState)
+	{
+	case ECharacterState::LOADING:
+		if (bIsPlayer)
+		{
+			DisableInput(MyPlayerController);
+		}
+
+		SetActorHiddenInGame(true);
+		HPBarWidget->SetHiddenInGame(true);
+		break;
+	case ECharacterState::READY:
+	{
+		SetActorHiddenInGame(false);
+		HPBarWidget->SetHiddenInGame(false);
+
+		CharacterStat->OnHPIsZero.AddLambda([this]() -> void
+		{
+			SetCharacterState(ECharacterState::DEAD);
+		});
+
+		auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+		ABCHECK(nullptr != CharacterWidget);
+		CharacterWidget->BindCharacterStat(CharacterStat);
+
+		if (bIsPlayer)
+		{
+			SetControlMode(EControlMode::DIABLO);
+			GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+			EnableInput(MyPlayerController);
+		}
+		else
+		{
+			SetControlMode(EControlMode::NPC);
+			GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+			MonsterAIController->RunAI();
+		}
+		break;
+	}
+		
+	case ECharacterState::DEAD:
+		SetActorEnableCollision(false);
+		GetMesh()->SetHiddenInGame(false);
+		HPBarWidget->SetHiddenInGame(true);
+		ABAnim->SetDeadAnim();
+
+		if (bIsPlayer)
+		{
+			DisableInput(MyPlayerController);
+		}
+		else
+		{
+			MonsterAIController->StopAI();
+		}
+
+		GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda([this]() -> void {
+			if (bIsPlayer)
+			{
+				MyPlayerController->RestartLevel();
+			}
+			else
+			{
+				Destroy();
+			}
+		}), DeadTimer, false);
+		break;
+	}
+}
+
+ECharacterState AMyCharacter::GetCharacterState() const
+{
+	return CurrentState;
 }
 
 // Called when the game starts or when spawned
@@ -116,18 +197,31 @@ void AMyCharacter::BeginPlay()
 		}
 	}
 
-	if (!IsPlayerControlled())
-	{
-		auto DefaultSetting = GetDefault<UABCharacterSetting>();
-		int32 RandIndex = FMath::RandRange(0, DefaultSetting->CharacterAssets.Num() - 1);
-		CharacterAssetToLoad = DefaultSetting->CharacterAssets[RandIndex];
+	bIsPlayer = IsPlayerControlled();
 
-		auto OpenWorldGameInstance = Cast<UOpenWorldGameInstance>(GetGameInstance());
-		if (nullptr != OpenWorldGameInstance)
-		{
-			AssetStreamingHandle = OpenWorldGameInstance->StreamableManager.RequestAsyncLoad(CharacterAssetToLoad, FStreamableDelegate::CreateUObject(this, &AMyCharacter::OnAssetLoadCompleted));
-		}
+	auto DefaultSetting = GetDefault<UABCharacterSetting>();
+
+	if (bIsPlayer)
+	{
+		MyPlayerController = Cast<AMyPlayerController>(GetController());
+		ABCHECK(nullptr != MyPlayerController);
+
+		AssetIndex = 4;
 	}
+	else
+	{
+		MonsterAIController = Cast<AMonsterAIController>(GetController());
+		ABCHECK(nullptr != MonsterAIController);
+
+		AssetIndex = FMath::RandRange(0, DefaultSetting->CharacterAssets.Num() - 1);
+	}
+
+	CharacterAssetToLoad = DefaultSetting->CharacterAssets[AssetIndex];
+
+	auto OpenWorldGameInstance = Cast<UOpenWorldGameInstance>(GetGameInstance());
+	ABCHECK(nullptr != OpenWorldGameInstance);
+	AssetStreamingHandle = OpenWorldGameInstance->StreamableManager.RequestAsyncLoad(CharacterAssetToLoad, FStreamableDelegate::CreateUObject(this, &AMyCharacter::OnAssetLoadCompleted));
+	SetCharacterState(ECharacterState::LOADING);
 }
 
 // Called every frame
@@ -434,10 +528,9 @@ void AMyCharacter::OnAssetLoadCompleted()
 	AssetStreamingHandle->ReleaseHandle();
 
 	TSoftObjectPtr<USkeletalMesh> LoadedAssetPath(CharacterAssetToLoad);
-	if (LoadedAssetPath->IsValidLowLevel())
-	{
-		GetMesh()->SetSkeletalMesh(LoadedAssetPath.Get());
-	}
+	ABCHECK(LoadedAssetPath.IsValid());
+	GetMesh()->SetSkeletalMesh(LoadedAssetPath.Get());
+	SetCharacterState(ECharacterState::READY);
 }
 
 // Called to bind functionality to input
@@ -481,22 +574,6 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 
 	CharacterStat->SetDamage(FinalDamage);
 	return FinalDamage;
-}
-
-void AMyCharacter::PossessedBy(AController * NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (IsPlayerControlled())
-	{
-		SetControlMode(EControlMode::DIABLO);
-		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-	}
-	else
-	{
-		SetControlMode(EControlMode::NPC);
-		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
-	}
 }
 
 bool AMyCharacter::CanSetWeapon()

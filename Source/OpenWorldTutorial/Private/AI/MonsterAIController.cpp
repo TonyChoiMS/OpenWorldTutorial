@@ -39,3 +39,24 @@ void AMonsterAIController::OnPossess(APawn * InPawn)
 		}
 	}
 }
+
+void AMonsterAIController::RunAI()
+{
+	if (UseBlackboard(BBAsset, Blackboard))
+	{
+		Blackboard->SetValueAsVector(HomePosKey, GetPawn()->GetActorLocation());
+		if (!RunBehaviorTree(BTAsset))
+		{
+			ABLOG(Error, TEXT("AICOntroller couldn't run behavior tree!!"));
+		}
+	}
+}
+
+void AMonsterAIController::StopAI()
+{
+	auto BehaviorTreeComponent = Cast<UBehaviorTreeComponent>(BrainComponent);
+	if (nullptr != BehaviorTreeComponent)
+	{
+		BehaviorTreeComponent->StopTree(EBTStopMode::Safe);
+	}
+}
