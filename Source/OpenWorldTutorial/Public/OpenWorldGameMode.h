@@ -64,6 +64,8 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
 	UPROPERTY(BlueprintAssignable, Category = "GameMode")
 	FOnActorKilled OnActorKilled;
 };

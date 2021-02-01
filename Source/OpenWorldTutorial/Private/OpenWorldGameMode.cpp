@@ -6,22 +6,24 @@
 #include "SPlayerState.h"
 #include "TimerManager.h"
 #include "MyCharacter.h"
+#include "OWTPlayerState.h"
 
 AOpenWorldGameMode::AOpenWorldGameMode()
 {
 	TimerBetweenWaves = 2.0f;
 
 	GameStateClass = ASGameState::StaticClass();
-	PlayerStateClass = APlayerState::StaticClass();
+	//PlayerStateClass = APlayerState::StaticClass();
+	PlayerStateClass = AOWTPlayerState::StaticClass();
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.0f;
 
-	static ConstructorHelpers::FClassFinder<APawn> BP_PAWN_C(TEXT("/Game/Character/Human/BP_MyCharacter"));
+	/*static ConstructorHelpers::FClassFinder<APawn> BP_PAWN_C(TEXT("/Game/Character/Human/BP_MyCharacter"));
 	if (BP_PAWN_C.Succeeded())
 	{
 		DefaultPawnClass = BP_PAWN_C.Class;
-	}
+	}*/
 }
 
 void AOpenWorldGameMode::StartWave()
@@ -155,6 +157,15 @@ void AOpenWorldGameMode::Tick(float DeltaSeconds)
 	CheckWaveState();
 
 	CheckAnyPlayerAlive();
+}
+
+void AOpenWorldGameMode::PostLogin(APlayerController * NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	auto OWTPlayerState = Cast<AOWTPlayerState>(NewPlayer->PlayerState);
+	ABCHECK(nullptr != OWTPlayerState);
+	OWTPlayerState->InitPlayerData();
 }
 
 void AOpenWorldGameMode::SpawnBotTimerElapsed()

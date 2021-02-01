@@ -15,10 +15,21 @@ class OPENWORLDTUTORIAL_API AMyPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
+	AMyPlayerController();
+
 	virtual void PostInitializeComponents() override;
 	//virtual void Possess(APawn* InPawn) override;
 
+	class UHUDWidget* GetHUDWidget() const;
+
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI)
+	TSubclassOf<class UHUDWidget> HUDWidgetClass;
+
+private:
+	UPROPERTY()
+	class UHUDWidget* HUDWidget;
 
 };

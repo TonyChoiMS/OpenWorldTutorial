@@ -25,6 +25,8 @@
 #include "ABCharacterSetting.h"
 #include "OpenWorldGameInstance.h"
 #include "MyPlayerController.h"
+#include "OWTPlayerState.h"
+#include "HUDWidget.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -107,6 +109,12 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 		if (bIsPlayer)
 		{
 			DisableInput(MyPlayerController);
+
+			MyPlayerController->GetHUDWidget()->BindCharacterStat(CharacterStat);
+
+			auto OWTPlayerState = Cast<AOWTPlayerState>(GetPlayerState());
+			ABCHECK(nullptr != OWTPlayerState);
+			CharacterStat->SetNewLevel(OWTPlayerState->GetCharacterLevel());
 		}
 
 		SetActorHiddenInGame(true);
