@@ -183,6 +183,11 @@ ECharacterState AMyCharacter::GetCharacterState() const
 	return CurrentState;
 }
 
+int32 AMyCharacter::GetExp() const
+{
+	return CharacterStat->GetDropExp();
+}
+
 // Called when the game starts or when spawned
 void AMyCharacter::BeginPlay()
 {
@@ -581,6 +586,16 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 	ABLOG(Warning, TEXT("Actor : %s took Damage : %f"), *GetName(), FinalDamage);
 
 	CharacterStat->SetDamage(FinalDamage);
+	if (CurrentState == ECharacterState::DEAD)
+	{
+		if (EventInstigator->IsPlayerController())
+		{
+			auto MyPlayerController = Cast<AMyPlayerController>(EventInstigator);
+			ABCHECK(nullptr != MyPlayerController, 0.0f);
+			MyPlayerController->NPCKill(this);
+		}
+	}
+
 	return FinalDamage;
 }
 

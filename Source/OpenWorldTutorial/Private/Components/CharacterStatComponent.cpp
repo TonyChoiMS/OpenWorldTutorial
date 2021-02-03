@@ -66,13 +66,18 @@ void UCharacterStatComponent::SetHP(float NewHP)
 	}
 }
 
-float UCharacterStatComponent::GetAttack()
+int32 UCharacterStatComponent::GetDropExp() const
+{
+	return CurrentStatData->DropExp;
+}
+
+float UCharacterStatComponent::GetAttack() const
 {
 	ABCHECK(nullptr != CurrentStatData, 0.0f);
 	return CurrentStatData->Attack;
 }
 
-float UCharacterStatComponent::GetHPRatio()
+float UCharacterStatComponent::GetHPRatio() const
 {
 	ABCHECK(nullptr != CurrentStatData, 0.0f);
 	return (CurrentStatData->MaxHP < KINDA_SMALL_NUMBER) ? 0.0f : (CurrentHP / CurrentStatData->MaxHP);

@@ -4,6 +4,7 @@
 #include "MyPlayerController.h"
 #include "HUDWidget.h"
 #include "OWTPlayerState.h"
+#include "MyCharacter.h"
 
 
 AMyPlayerController::AMyPlayerController()
@@ -28,6 +29,11 @@ UHUDWidget * AMyPlayerController::GetHUDWidget() const
 	return HUDWidget;
 }
 
+void AMyPlayerController::NPCKill(AMyCharacter * KilledNPC) const
+{
+	OWTPlayerState->AddExp(KilledNPC->GetExp());
+}
+
 void AMyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -38,7 +44,7 @@ void AMyPlayerController::BeginPlay()
 	HUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
 	HUDWidget->AddToViewport();
 
-	auto OWTPlayerState = Cast<AOWTPlayerState>(PlayerState);
+	OWTPlayerState = Cast<AOWTPlayerState>(PlayerState);
 	ABCHECK(nullptr != OWTPlayerState);
 	HUDWidget->BindPlayerState(OWTPlayerState);
 	OWTPlayerState->OnPlayerStateChanged.Broadcast();
