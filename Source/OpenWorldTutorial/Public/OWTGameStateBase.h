@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "OpenWorldTutorial.h"
 #include "GameFramework/GameStateBase.h"
 #include "OWTGameStateBase.generated.h"
 
@@ -13,5 +13,15 @@ UCLASS()
 class OPENWORLDTUTORIAL_API AOWTGameStateBase : public AGameStateBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	AOWTGameStateBase();
+
+public:
+	int32 GetTotalGameScore() const;
+	void AddGameScore();
+
+private:
+	UPROPERTY(Transient)
+	int32 TotalGameScore;
 };

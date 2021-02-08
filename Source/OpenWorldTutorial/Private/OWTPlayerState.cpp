@@ -49,6 +49,12 @@ bool AOWTPlayerState::AddExp(int32 IncomeExp)
 	return DidLevelUp;
 }
 
+void AOWTPlayerState::AddGameScore()
+{
+	GameScore++;
+	OnPlayerStateChanged.Broadcast();
+}
+
 void AOWTPlayerState::InitPlayerData()
 {
 	SetPlayerName(TEXT("Destiny"));

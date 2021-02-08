@@ -34,6 +34,11 @@ void AMyPlayerController::NPCKill(AMyCharacter * KilledNPC) const
 	OWTPlayerState->AddExp(KilledNPC->GetExp());
 }
 
+void AMyPlayerController::AddGameScore() const
+{
+	OWTPlayerState->AddGameScore();
+}
+
 void AMyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();

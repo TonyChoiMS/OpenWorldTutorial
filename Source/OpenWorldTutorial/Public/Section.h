@@ -32,6 +32,9 @@ private:
 
 	void OnNPCSpawn();
 
+	UFUNCTION()
+	void OnKeyNPCDestroyed(AActor* DestroyedActor);
+
 public:	
 	// Sets default values for this actor's properties
 	ASection();

@@ -4,6 +4,8 @@
 #include "Section.h"
 #include "MyCharacter.h"
 #include "ABItemBox.h"
+#include "MyPlayerController.h"
+#include "OpenWorldGameMode.h"
 
 // Sets default values
 ASection::ASection()
@@ -169,7 +171,27 @@ void ASection::OnGateTriggerBeginOverlap(UPrimitiveComponent * OverlappedCompone
 
 void ASection::OnNPCSpawn()
 {
-	GetWorld()->SpawnActor<AMyCharacter>(GetActorLocation() + FVector::UpVector * 88.0f, FRotator::ZeroRotator);
+	GetWorld()->GetTimerManager().ClearTimer(SpawnNPCTimerHandle);
+	auto KeyNPC = GetWorld()->SpawnActor<AMyCharacter>(GetActorLocation() + FVector::UpVector * 88.0f, FRotator::ZeroRotator);
+	if (nullptr != KeyNPC)
+	{
+		KeyNPC->OnDestroyed.AddDynamic(this, &ASection::OnKeyNPCDestroyed);
+	}
+}
+
+void ASection::OnKeyNPCDestroyed(AActor * DestroyedActor)
+{
+	auto MyCharacter = Cast<AMyCharacter>(DestroyedActor);
+	ABCHECK(nullptr != MyCharacter);
+
+	auto MyPlayerController = Cast<AMyPlayerController>(MyCharacter->LastHitBy);
+	ABCHECK(nullptr != MyPlayerController);
+
+	auto OpenWorldGameMode = Cast<AOpenWorldGameMode>(GetWorld()->GetAuthGameMode());
+	ABCHECK(nullptr != OpenWorldGameMode);
+	OpenWorldGameMode->AddScore(MyPlayerController);
+
+	SetState(ESectionState::COMPLETE);
 }
 
 void ASection::OnConstruction(const FTransform& Transform)

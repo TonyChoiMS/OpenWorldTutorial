@@ -7,6 +7,8 @@
 #include "TimerManager.h"
 #include "MyCharacter.h"
 #include "OWTPlayerState.h"
+#include "OWTGameStateBase.h"
+#include "MyPlayerController.h"
 
 AOpenWorldGameMode::AOpenWorldGameMode()
 {
@@ -15,6 +17,7 @@ AOpenWorldGameMode::AOpenWorldGameMode()
 	GameStateClass = ASGameState::StaticClass();
 	//PlayerStateClass = APlayerState::StaticClass();
 	PlayerStateClass = AOWTPlayerState::StaticClass();
+	GameStateClass = AOWTGameStateBase::StaticClass();
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.0f;
@@ -143,6 +146,12 @@ void AOpenWorldGameMode::RestartDeadPlayers()
 	}
 }
 
+void AOpenWorldGameMode::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	OWTGameStateBase = Cast<AOWTGameStateBase>(GameState);
+}
+
 void AOpenWorldGameMode::StartPlay()
 {
 	Super::StartPlay();
@@ -166,6 +175,21 @@ void AOpenWorldGameMode::PostLogin(APlayerController * NewPlayer)
 	auto OWTPlayerState = Cast<AOWTPlayerState>(NewPlayer->PlayerState);
 	ABCHECK(nullptr != OWTPlayerState);
 	OWTPlayerState->InitPlayerData();
+}
+
+void AOpenWorldGameMode::AddScore(AMyPlayerController * ScoredPlayer)
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		const auto MyPlayerController = Cast<AMyPlayerController>(It->Get());
+		if ((nullptr != MyPlayerController) && (ScoredPlayer == MyPlayerController))
+		{
+			MyPlayerController->AddGameScore();
+			break;
+		}
+	}
+
+	OWTGameStateBase->AddGameScore();
 }
 
 void AOpenWorldGameMode::SpawnBotTimerElapsed()

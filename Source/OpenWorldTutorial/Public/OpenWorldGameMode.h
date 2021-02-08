@@ -60,12 +60,19 @@ protected:
 public:
 	AOpenWorldGameMode();
 
+	virtual void PostInitializeComponents() override;
 	virtual void StartPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
+	void AddScore(class AMyPlayerController *Player);
+
 	UPROPERTY(BlueprintAssignable, Category = "GameMode")
 	FOnActorKilled OnActorKilled;
+
+private:
+	UPROPERTY()
+	class AOWTGameStateBase* OWTGameStateBase;
 };
