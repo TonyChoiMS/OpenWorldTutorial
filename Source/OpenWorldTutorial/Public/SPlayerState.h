@@ -16,4 +16,6 @@ class OPENWORLDTUTORIAL_API ASPlayerState : public APlayerState
 	
 	UFUNCTION(BlueprintCallable, Category = "PlayerState")
 	void AddScore(float ScoreDelta);
+
+
 };

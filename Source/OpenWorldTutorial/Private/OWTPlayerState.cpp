@@ -3,17 +3,25 @@
 
 #include "OWTPlayerState.h"
 #include "OpenWorldGameInstance.h"
+#include "OWTSaveGame.h"
 
 AOWTPlayerState::AOWTPlayerState()
 {
 	CharacterLevel = 1;
 	GameScore = 0;
+	GameHighScore = 0;
 	Exp = 0;
+	SaveSlotName = TEXT("Player1");
 }
 
 int32 AOWTPlayerState::GetGameScore() const
 {
 	return GameScore;
+}
+
+int32 AOWTPlayerState::GetGameHighScore() const
+{
+	return GameHighScore;
 }
 
 int32 AOWTPlayerState::GetCharacterLevel() const
@@ -46,21 +54,49 @@ bool AOWTPlayerState::AddExp(int32 IncomeExp)
 	}
 
 	OnPlayerStateChanged.Broadcast();
+	SavePlayerData();
 	return DidLevelUp;
 }
 
 void AOWTPlayerState::AddGameScore()
 {
 	GameScore++;
+	if (GameScore >= GameHighScore)
+	{
+		GameHighScore = GameScore;
+	}
 	OnPlayerStateChanged.Broadcast();
+	SavePlayerData();
 }
 
 void AOWTPlayerState::InitPlayerData()
 {
-	SetPlayerName(TEXT("Destiny"));
-	SetCharacterLevel(5);
+	auto OWTSaveGame = Cast<UOWTSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
+	if (nullptr == OWTSaveGame)
+	{
+		OWTSaveGame = GetMutableDefault<UOWTSaveGame>();
+	}
+
+	SetPlayerName(OWTSaveGame->PlayerName);
+	SetCharacterLevel(OWTSaveGame->Level);
 	GameScore = 0;
-	Exp = 0;
+	GameHighScore = OWTSaveGame->HighScore;
+	Exp = OWTSaveGame->Exp;
+	SavePlayerData();
+}
+
+void AOWTPlayerState::SavePlayerData()
+{
+	UOWTSaveGame* NewPlayerData = NewObject<UOWTSaveGame>();
+	NewPlayerData->PlayerName = GetPlayerName();
+	NewPlayerData->Level = CharacterLevel;
+	NewPlayerData->Exp = Exp;
+	NewPlayerData->HighScore = GameHighScore;
+
+	if (!UGameplayStatics::SaveGameToSlot(NewPlayerData, SaveSlotName, 0))
+	{
+		ABLOG(Error, TEXT("SaveGame Error!"));
+	}
 }
 
 void AOWTPlayerState::SetCharacterLevel(int32 NewCharacterLevel)
