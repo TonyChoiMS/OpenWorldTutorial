@@ -8,7 +8,7 @@ public class OpenWorldTutorial : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "UMG", "AIModule", "GameplayTasks" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "UMG", "AIModule", "GameplayTasks", "PhysicsCore" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "OpenWorldTutorialSetting" });
 

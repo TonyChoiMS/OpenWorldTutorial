@@ -17,21 +17,30 @@ UMyAnimInstance::UMyAnimInstance()
 	{
 		AttackMontage = ATTACK_MONTAGE.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE2(TEXT("/Game/Animations/Montage_WarriorAttack2.Montage_WarriorAttack2"));
+
+	if (ATTACK_MONTAGE2.Succeeded())
+	{
+		AttackMontage2 = ATTACK_MONTAGE2.Object;
+	}
 }
 
 void UMyAnimInstance::NativeUpdateAnimation(float DeltaSecond)
 {
 	Super::NativeUpdateAnimation(DeltaSecond);
 
-	auto Pawn = TryGetPawnOwner();
+	APawn* PawnOwner = TryGetPawnOwner();
 
-	if (!::IsValid(Pawn))
+	if (!IsValid(PawnOwner))
 		return;
+
+	Character = Cast<ACharacter>(PawnOwner);
 	
 	if (!IsDead)
 	{
-		CurrentPawnSpeed = Pawn->GetVelocity().Size2D();			// Size()를 쓰면 점프를 하는 것도 이동한다고 판단하기 때문에 쓰면안됨.
-		auto Character = Cast<ACharacter>(Pawn);
+		CurrentPawnSpeed = PawnOwner->GetVelocity().Size2D();			// Size()를 쓰면 점프를 하는 것도 이동한다고 판단하기 때문에 쓰면안됨.
+		
 		if (Character)
 		{
 			bIsInAir = Character->GetMovementComponent()->IsFalling();
@@ -43,6 +52,12 @@ void UMyAnimInstance::PlayAttackMontage()
 {
 	ABCHECK(!IsDead);
 	Montage_Play(AttackMontage, 1.0f);
+}
+
+void UMyAnimInstance::PlayAttackMontage2()
+{
+	ABCHECK(!IsDead);
+	Montage_Play(AttackMontage2, 1.0f);
 }
 
 void UMyAnimInstance::JumpToAttackMontageSection(int32 NewSection)

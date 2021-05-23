@@ -2,7 +2,7 @@
 
 
 #include "ObjectPool.h"
-#include  "UObject/ConstructorHelpers.h"
+#include "UObject/ConstructorHelpers.h"
 #include "GameFramework/Actor.h"
 #include "Engine.h"
 
@@ -24,7 +24,7 @@ void UObjectPool::BeginPlay()
 		{
 			for (int i = 0; i < PoolSize; i++)
 			{
-				AObjectWithinPool* PoolableActor = GetWorld()->SpawnActor < AObjectWithinPool>(PooledObjectSubclass, FVector().ZeroVector, FRotator().ZeroRotator);
+				AObjectWithinPool* PoolableActor = GetWorld()->SpawnActor <AObjectWithinPool>(PooledObjectSubclass, FVector().ZeroVector, FRotator().ZeroRotator);
 				PoolableActor->SetActive(false);
 				Pool.Add(PoolableActor);
 				UE_LOG(LogTemp, Warning, TEXT("Added Object to the pool"));
@@ -42,12 +42,3 @@ AObjectWithinPool * UObjectPool::GetPooledObject()
 	}
 	return nullptr;
 }
-
-// Called every frame
-void UObjectPool::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-

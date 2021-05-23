@@ -235,6 +235,23 @@ void AMyCharacter::BeginPlay()
 	ABCHECK(nullptr != OpenWorldGameInstance);
 	AssetStreamingHandle = OpenWorldGameInstance->StreamableManager.RequestAsyncLoad(CharacterAssetToLoad, FStreamableDelegate::CreateUObject(this, &AMyCharacter::OnAssetLoadCompleted));
 	SetCharacterState(ECharacterState::LOADING);
+
+	ABAnim = Cast<UMyAnimInstance>(GetMesh()->GetAnimInstance());
+	ABCHECK(nullptr != ABAnim);
+
+	ABAnim->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackMontageEnded);
+
+	ABAnim->OnNextAttackCheck.AddLambda([this]() -> void {
+		CanNextCombo = false;
+
+		if (IsComboInputOn)
+		{
+			AttackStartComboState();
+			ABAnim->JumpToAttackMontageSection(CurrentCombo);
+		}
+	});
+
+	ABAnim->OnAttackHitCheck.AddUObject(this, &AMyCharacter::AttackCheck);
 }
 
 // Called every frame
@@ -269,22 +286,7 @@ void AMyCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	ABAnim = Cast<UMyAnimInstance>(GetMesh()->GetAnimInstance());
-	ABCHECK(nullptr != ABAnim);
-
-	ABAnim->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackMontageEnded);
-
-	ABAnim->OnNextAttackCheck.AddLambda([this]() -> void {
-		CanNextCombo = false;
-
-		if (IsComboInputOn)
-		{
-			AttackStartComboState();
-			ABAnim->JumpToAttackMontageSection(CurrentCombo);
-		}
-	});
-
-	ABAnim->OnAttackHitCheck.AddUObject(this, &AMyCharacter::AttackCheck);
+	
 
 	CharacterStat->OnHPIsZero.AddLambda([this]() -> void {
 		ABLOG(Warning, TEXT("OnHPIsZero"));
@@ -403,6 +405,11 @@ void AMyCharacter::Attack()
 		ABAnim->JumpToAttackMontageSection(CurrentCombo);
 		IsAttacking = true;
 	}
+}
+
+void AMyCharacter::AttackSkill()
+{
+	ABAnim->PlayAttackMontage2();
 }
 
 void AMyCharacter::OnHealthChanged(USHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType,
@@ -566,6 +573,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction(TEXT("Zoom"), IE_Released, this, &AMyCharacter::EndZoom);
 
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMyCharacter::Attack);
+	PlayerInputComponent->BindAction(TEXT("Skill"), IE_Pressed, this, &AMyCharacter::AttackSkill);
 
 	PlayerInputComponent->BindAction(TEXT("ViewChange"), IE_Released, this, &AMyCharacter::ViewChange);
 }
@@ -590,9 +598,10 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 	{
 		if (EventInstigator->IsPlayerController())
 		{
-			auto MyPlayerController = Cast<AMyPlayerController>(EventInstigator);
-			ABCHECK(nullptr != MyPlayerController, 0.0f);
-			MyPlayerController->NPCKill(this);
+			// TODO:: 코드 재 확인할 필요성이 있음.
+			auto MyPC = Cast<AMyPlayerController>(EventInstigator);
+			ABCHECK(nullptr != MyPC, 0.0f);
+			MyPC->NPCKill(this);
 		}
 	}
 

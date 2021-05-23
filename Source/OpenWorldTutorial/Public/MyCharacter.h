@@ -64,6 +64,7 @@ public:
 	class UWidgetComponent* HPBarWidget;
 
 	void Attack();
+	void AttackSkill();
 	FOnAttackEndDelegate OnAttackEnd;
 
 protected:

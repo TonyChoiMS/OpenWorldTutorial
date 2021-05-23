@@ -42,10 +42,3 @@ void AObjectWithinPool::Deactivate()
 	SetActive(false);
 }
 
-// Called every frame
-void AObjectWithinPool::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

@@ -36,9 +36,4 @@ protected:
 	bool Active;
 	// 비활성화 시킬 함수
 	void Deactivate();
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 };
