@@ -14,19 +14,20 @@ AOpenWorldGameMode::AOpenWorldGameMode()
 {
 	TimerBetweenWaves = 2.0f;
 
-	GameStateClass = ASGameState::StaticClass();
+	//GameStateClass = ASGameState::StaticClass();
 	//PlayerStateClass = APlayerState::StaticClass();
 	PlayerStateClass = AOWTPlayerState::StaticClass();
 	GameStateClass = AOWTGameStateBase::StaticClass();
+	PlayerControllerClass = AMyPlayerController::StaticClass();
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.0f;
 
-	/*static ConstructorHelpers::FClassFinder<APawn> BP_PAWN_C(TEXT("/Game/Character/Human/BP_MyCharacter"));
+	static ConstructorHelpers::FClassFinder<APawn> BP_PAWN_C(TEXT("/Game/Character/Human/BP_WarriorCharacter"));
 	if (BP_PAWN_C.Succeeded())
 	{
 		DefaultPawnClass = BP_PAWN_C.Class;
-	}*/
+	}
 }
 
 void AOpenWorldGameMode::StartWave()
@@ -126,12 +127,10 @@ void AOpenWorldGameMode::GameOver()
 
 void AOpenWorldGameMode::SetWaveState(EWaveState NewState)
 {
-	ASGameState* GS = GetGameState<ASGameState>();
-
-	if (ensureAlways(GS))
+	/*if (ensureAlways(GameStateClass))
 	{
-		GS->SetWaveState(NewState);
-	}
+		GameStateClass->SetWaveState(NewState);
+	}*/
 }
 
 void AOpenWorldGameMode::RestartDeadPlayers()

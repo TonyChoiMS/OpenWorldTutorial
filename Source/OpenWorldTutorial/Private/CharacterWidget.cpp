@@ -10,15 +10,15 @@ void UCharacterWidget::BindCharacterStat(UCharacterStatComponent* NewCharacterSt
 	ABCHECK(nullptr != NewCharacterStat);
 
 	CurrentCharacterStat = NewCharacterStat;
-	NewCharacterStat->OnHPChanged.AddUObject(this, &UCharacterWidget::UpdateHPWidget);
+	CurrentCharacterStat->OnHPChanged.AddUObject(this, &UCharacterWidget::UpdateHPWidget);
 }
 
 void UCharacterWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	HPPProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("PB_HPBar")));
-	ABCHECK(nullptr != HPPProgressBar);
-	UpdateHPWidget();
+	//ABCHECK(nullptr != HPPProgressBar);
+	//UpdateHPWidget();
 }
 
 void UCharacterWidget::UpdateHPWidget()

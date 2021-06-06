@@ -20,7 +20,7 @@
 #include "ABWeapon.h"
 #include "MyAnimInstance.h"
 #include "DrawDebugHelpers.h"
-#include "CharacterWidget.h"
+//#include "CharacterWidget.h"
 #include "MonsterAIController.h"
 #include "ABCharacterSetting.h"
 #include "OpenWorldGameInstance.h"
@@ -88,14 +88,22 @@ AMyCharacter::AMyCharacter()
 	AIControllerClass = AMonsterAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-	AssetIndex = 4;
-
 	// Init이 완료되기 전엔 Hidden
 	SetActorHiddenInGame(true);
 	HPBarWidget->SetHiddenInGame(true);
 	//bCanBeDamaged = false;		엔진 업데이트에 따라 해당 변수가 private이 됨.
 
+	/*auto OWTPlayerState = Cast<AOWTPlayerState>(GetPlayerState());
+	ABCHECK(nullptr != OWTPlayerState);
+	CharacterStat->SetNewLevel(OWTPlayerState->GetCharacterLevel());*/
+
+	//CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+	//ABCHECK(nullptr != CharacterWidget);
+	//CharacterWidget->BindCharacterStat(CharacterStat);
+
 	DeadTimer = 5.0f;
+
+	ABLOG(Warning, TEXT("AMyCharacter()"));
 }
 
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
@@ -109,12 +117,6 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 		if (bIsPlayer)
 		{
 			DisableInput(MyPlayerController);
-
-			MyPlayerController->GetHUDWidget()->BindCharacterStat(CharacterStat);
-
-			auto OWTPlayerState = Cast<AOWTPlayerState>(GetPlayerState());
-			ABCHECK(nullptr != OWTPlayerState);
-			CharacterStat->SetNewLevel(OWTPlayerState->GetCharacterLevel());
 		}
 
 		SetActorHiddenInGame(true);
@@ -128,11 +130,10 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 		CharacterStat->OnHPIsZero.AddLambda([this]() -> void
 		{
 			SetCharacterState(ECharacterState::DEAD);
+			SetActorEnableCollision(false);
 		});
-
-		auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
-		ABCHECK(nullptr != CharacterWidget);
-		CharacterWidget->BindCharacterStat(CharacterStat);
+		MyPlayerController->GetHUDWidget()->BindCharacterStat(CharacterStat);
+		//CharacterWidget->BindCharacterStat(CharacterStat);
 
 		if (bIsPlayer)
 		{
@@ -216,6 +217,7 @@ void AMyCharacter::BeginPlay()
 
 	if (bIsPlayer)
 	{
+		
 		MyPlayerController = Cast<AMyPlayerController>(GetController());
 		ABCHECK(nullptr != MyPlayerController);
 
@@ -267,7 +269,8 @@ void AMyCharacter::Tick(float DeltaTime)
 		SpringArmComp->SetRelativeRotation(FMath::RInterpTo(SpringArmComp->GetRelativeRotation(), ArmRotationTo, DeltaTime, ArmRotationSpeed));
 		if (DirectionToMove.SizeSquared() > 0.0f)
 		{
-			GetController()->SetControlRotation(FRotationMatrix::MakeFromX(DirectionToMove).Rotator());
+			MyPlayerController->SetControlRotation(FRotationMatrix::MakeFromX(DirectionToMove).Rotator());
+			//GetController()->SetControlRotation();
 			AddMovementInput(DirectionToMove);
 		}
 		break;
@@ -286,24 +289,18 @@ void AMyCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	
-
-	CharacterStat->OnHPIsZero.AddLambda([this]() -> void {
-		ABLOG(Warning, TEXT("OnHPIsZero"));
-		ABAnim->SetDeadAnim();
-		SetActorEnableCollision(false);
-	});
 	ABCHECK(nullptr != HPBarWidget);
 	// UserWidget이 초기화되지 않았을 경우 GetUserWidgetObject()이 null을 반환하는 케이스가 생기기 때문에
 	// 캐스팅 하기 전에 InitWidget()을 호출해서 정상적으로 캐스팅 되도록 추가.
 	HPBarWidget->InitWidget();
 	
-	auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+	ABLOG(Warning, TEXT("PostInitializeComponents()"));
+	/*auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
 	ABCHECK(nullptr != CharacterWidget)
 	if (nullptr != CharacterWidget)
 	{
 		CharacterWidget->BindCharacterStat(CharacterStat);
-	}
+	}*/
 }
 
 void AMyCharacter::MoveForward(float value)

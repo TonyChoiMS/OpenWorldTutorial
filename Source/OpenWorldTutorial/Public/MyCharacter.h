@@ -63,6 +63,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = UI)
 	class UWidgetComponent* HPBarWidget;
 
+	/*UPROPERTY(VisibleAnywhere, Category = UI)
+	class UCharacterWidget* CharacterWidget;*/
+
 	void Attack();
 	void AttackSkill();
 	FOnAttackEndDelegate OnAttackEnd;
