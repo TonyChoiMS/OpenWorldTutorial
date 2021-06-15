@@ -191,6 +191,11 @@ void AOpenWorldGameMode::AddScore(AMyPlayerController * ScoredPlayer)
 	OWTGameStateBase->AddGameScore();
 }
 
+int32 AOpenWorldGameMode::GetScore() const
+{
+	return OWTGameStateBase->GetTotalGameScore();
+}
+
 void AOpenWorldGameMode::SpawnBotTimerElapsed()
 {
 	SpawnNewBot();

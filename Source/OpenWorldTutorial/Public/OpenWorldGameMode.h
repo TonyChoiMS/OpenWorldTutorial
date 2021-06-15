@@ -71,6 +71,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "GameMode")
 	FOnActorKilled OnActorKilled;
+	int32 GetScore() const;
 
 private:
 	UPROPERTY()

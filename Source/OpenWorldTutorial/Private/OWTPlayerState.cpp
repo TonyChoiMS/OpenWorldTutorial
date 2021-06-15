@@ -12,6 +12,7 @@ AOWTPlayerState::AOWTPlayerState()
 	GameHighScore = 0;
 	Exp = 0;
 	SaveSlotName = TEXT("Player1");
+	CharacterIndex = 0;
 }
 
 int32 AOWTPlayerState::GetGameScore() const
@@ -27,6 +28,11 @@ int32 AOWTPlayerState::GetGameHighScore() const
 int32 AOWTPlayerState::GetCharacterLevel() const
 {
 	return CharacterLevel;
+}
+
+int32 AOWTPlayerState::GetCharacterIndex() const
+{
+	return CharacterIndex;
 }
 
 float AOWTPlayerState::GetExpRatio() const
@@ -82,6 +88,7 @@ void AOWTPlayerState::InitPlayerData()
 	GameScore = 0;
 	GameHighScore = OWTSaveGame->HighScore;
 	Exp = OWTSaveGame->Exp;
+	CharacterIndex = OWTSaveGame->CharacterIndex;
 	SavePlayerData();
 }
 
@@ -92,6 +99,7 @@ void AOWTPlayerState::SavePlayerData()
 	NewPlayerData->Level = CharacterLevel;
 	NewPlayerData->Exp = Exp;
 	NewPlayerData->HighScore = GameHighScore;
+	NewPlayerData->CharacterIndex = CharacterIndex;
 
 	if (!UGameplayStatics::SaveGameToSlot(NewPlayerData, SaveSlotName, 0))
 	{
