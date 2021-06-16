@@ -28,6 +28,8 @@ AOpenWorldGameMode::AOpenWorldGameMode()
 	{
 		DefaultPawnClass = BP_PAWN_C.Class;
 	}
+
+	ScoreToClear = 2;
 }
 
 void AOpenWorldGameMode::StartWave()
@@ -189,6 +191,25 @@ void AOpenWorldGameMode::AddScore(AMyPlayerController * ScoredPlayer)
 	}
 
 	OWTGameStateBase->AddGameScore();
+
+	if (GetScore() >= ScoreToClear)
+	{
+		OWTGameStateBase->SetGameCleared();
+
+		for (FConstPawnIterator It = GetWorld()->GetPawnIterator(); It; ++It)
+		{
+			(*It)->TurnOff();
+		}
+
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			const auto PlayerController = Cast<AMyPlayerController>(It->Get());
+			if (nullptr != PlayerController)
+			{
+				PlayerController->ShowResultUI();
+			}
+		}
+	}
 }
 
 int32 AOpenWorldGameMode::GetScore() const

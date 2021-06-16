@@ -178,7 +178,8 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 		GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda([this]() -> void {
 			if (bIsPlayer)
 			{
-				MyPlayerController->RestartLevel();
+				MyPlayerController->ShowResultUI();
+				//MyPlayerController->RestartLevel();
 			}
 			else
 			{

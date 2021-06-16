@@ -76,4 +76,7 @@ public:
 private:
 	UPROPERTY()
 	class AOWTGameStateBase* OWTGameStateBase;
+
+	UPROPERTY()
+	int32 ScoreToClear;
 };

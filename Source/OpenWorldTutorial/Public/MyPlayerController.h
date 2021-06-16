@@ -18,17 +18,25 @@ public:
 	AMyPlayerController();
 
 	virtual void PostInitializeComponents() override;
-	//virtual void Possess(APawn* InPawn) override;
 
 	class UHUDWidget* GetHUDWidget() const;
 	void NPCKill(class AMyCharacter* KilledNPC) const;
 	void AddGameScore() const;
+	void ChangeInputMode(bool bGameMode = true);
+	void ShowResultUI();
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI)
 	TSubclassOf<class UHUDWidget> HUDWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI)
+	TSubclassOf<class UGamePlayWidget> MenuWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI)
+	TSubclassOf<class UGamePlayResultWidget> ResultWidgetClass;
 
 private:
 	UPROPERTY()
@@ -37,4 +45,14 @@ private:
 	UPROPERTY()
 	class AOWTPlayerState* OWTPlayerState;
 
+	void OnGamePause();
+
+	UPROPERTY()
+	class UGamePlayWidget* MenuWidget;
+
+	FInputModeGameOnly GameInputMode;
+	FInputModeUIOnly UIInputMode;
+
+	UPROPERTY()
+	class UGamePlayResultWidget* ResultWidget;
 };

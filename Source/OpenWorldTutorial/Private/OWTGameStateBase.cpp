@@ -6,6 +6,7 @@
 AOWTGameStateBase::AOWTGameStateBase()
 {
 	TotalGameScore = 0;
+	bGameCleared = false;
 }
 
 int32 AOWTGameStateBase::GetTotalGameScore() const
@@ -16,4 +17,14 @@ int32 AOWTGameStateBase::GetTotalGameScore() const
 void AOWTGameStateBase::AddGameScore()
 {
 	TotalGameScore++;
+}
+
+void AOWTGameStateBase::SetGameCleared()
+{
+	bGameCleared = true;
+}
+
+bool AOWTGameStateBase::IsGameCleared() const
+{
+	return bGameCleared;
 }
