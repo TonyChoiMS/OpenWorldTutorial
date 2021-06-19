@@ -3,7 +3,6 @@
 #include "OpenWorldGameMode.h"
 #include "SHealthComponent.h"
 #include "SGameState.h"
-#include "SPlayerState.h"
 #include "TimerManager.h"
 #include "MyCharacter.h"
 #include "OWTPlayerState.h"
@@ -14,8 +13,6 @@ AOpenWorldGameMode::AOpenWorldGameMode()
 {
 	TimerBetweenWaves = 2.0f;
 
-	//GameStateClass = ASGameState::StaticClass();
-	//PlayerStateClass = APlayerState::StaticClass();
 	PlayerStateClass = AOWTPlayerState::StaticClass();
 	GameStateClass = AOWTGameStateBase::StaticClass();
 	PlayerControllerClass = AMyPlayerController::StaticClass();
@@ -215,6 +212,10 @@ void AOpenWorldGameMode::AddScore(AMyPlayerController * ScoredPlayer)
 int32 AOpenWorldGameMode::GetScore() const
 {
 	return OWTGameStateBase->GetTotalGameScore();
+}
+
+void AOpenWorldGameMode::SpawnNewBot()
+{
 }
 
 void AOpenWorldGameMode::SpawnBotTimerElapsed()

@@ -2,7 +2,6 @@
 
 
 #include "MyCharacter.h"
-#include "OpenWorldTutorialProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
