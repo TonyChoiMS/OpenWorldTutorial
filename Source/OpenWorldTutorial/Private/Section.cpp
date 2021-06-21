@@ -28,8 +28,9 @@ ASection::ASection()
 
 	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TRIGGER"));
 	Trigger->SetBoxExtent(FVector(775.0f, 775.0f, 300.0f));
+	Trigger->SetupAttachment(RootComponent);
 	Trigger->SetRelativeLocation(FVector(0.0f, 0.0f, 250.0f));
-	Trigger->SetCollisionProfileName(TEXT("OWTTrigger"));
+	Trigger->SetCollisionProfileName(TEXT("ABTrigger"));
 
 	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ASection::OnTriggerBeginOverlap);
 
@@ -43,7 +44,7 @@ ASection::ASection()
 	static FName GateSockets[] = { { TEXT("+XGate") }, { TEXT("-XGate") }, { TEXT("+YGate") }, { TEXT("-YGate") } };
 	for (FName GateSocket : GateSockets)
 	{
-		//ABCHECK(Mesh->DoesSocketExist(GateSocket));
+		ABCHECK(Mesh->DoesSocketExist(GateSocket));
 		UStaticMeshComponent* NewGate = CreateDefaultSubobject<UStaticMeshComponent>(*GateSocket.ToString());
 		NewGate->SetStaticMesh(SM_GATE.Object);
 		NewGate->SetupAttachment(RootComponent, GateSocket);
@@ -54,7 +55,7 @@ ASection::ASection()
 		NewGateTrigger->SetBoxExtent(FVector(100.0f, 100.0f, 300.0f));
 		NewGateTrigger->SetupAttachment(RootComponent, GateSocket);
 		NewGateTrigger->SetRelativeLocation(FVector(70.0f, 0.0f, 250.0f));
-		NewGateTrigger->SetCollisionProfileName(TEXT("OWTTrigger"));
+		NewGateTrigger->SetCollisionProfileName(TEXT("ABTrigger"));
 		GateTriggers.Add(NewGateTrigger);
 
 		NewGateTrigger->OnComponentBeginOverlap.AddDynamic(this, &ASection::OnGateTriggerBeginOverlap);
