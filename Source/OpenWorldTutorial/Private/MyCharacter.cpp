@@ -91,6 +91,19 @@ AMyCharacter::AMyCharacter()
 	// Init이 완료되기 전엔 Hidden
 	SetActorHiddenInGame(true);
 	HPBarWidget->SetHiddenInGame(true);
+
+	// Setting AnimBP
+	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+
+	static ConstructorHelpers::FClassFinder<UAnimInstance> WARRIOR_ANIM(TEXT("/Game/Character/Human/BPA_WarriorCharacter"));
+
+	if (WARRIOR_ANIM.Succeeded())
+	{
+		GetMesh()->SetAnimInstanceClass(WARRIOR_ANIM.Class);
+	}
+
+	SetControlMode(EControlMode::DIABLO);
+
 	//bCanBeDamaged = false;		엔진 업데이트에 따라 해당 변수가 private이 됨.
 
 	/*auto OWTPlayerState = Cast<AOWTPlayerState>(GetPlayerState());
