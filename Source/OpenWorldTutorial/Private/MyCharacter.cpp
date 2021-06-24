@@ -19,7 +19,7 @@
 #include "ABWeapon.h"
 #include "MyAnimInstance.h"
 #include "DrawDebugHelpers.h"
-//#include "CharacterWidget.h"
+#include "CharacterWidget.h"
 #include "MonsterAIController.h"
 #include "ABCharacterSetting.h"
 #include "OpenWorldGameInstance.h"
@@ -141,20 +141,27 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 			SetCharacterState(ECharacterState::DEAD);
 			SetActorEnableCollision(false);
 		});
-		MyPlayerController->GetHUDWidget()->BindCharacterStat(CharacterStat);
-		//CharacterWidget->BindCharacterStat(CharacterStat);
-
+		
 		if (bIsPlayer)
 		{
 			SetControlMode(EControlMode::DIABLO);
 			GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 			EnableInput(MyPlayerController);
+
+			MyPlayerController->GetHUDWidget()->BindCharacterStat(CharacterStat);
 		}
 		else
 		{
 			SetControlMode(EControlMode::NPC);
 			GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 			MonsterAIController->RunAI();
+
+			auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+			ABCHECK(nullptr != CharacterWidget)
+				if (nullptr != CharacterWidget)
+				{
+					CharacterWidget->BindCharacterStat(CharacterStat);
+				}
 		}
 		break;
 	}
@@ -321,12 +328,12 @@ void AMyCharacter::PostInitializeComponents()
 	HPBarWidget->InitWidget();
 	
 	ABLOG(Warning, TEXT("PostInitializeComponents()"));
-	/*auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+	auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
 	ABCHECK(nullptr != CharacterWidget)
 	if (nullptr != CharacterWidget)
 	{
 		CharacterWidget->BindCharacterStat(CharacterStat);
-	}*/
+	}
 }
 
 void AMyCharacter::MoveForward(float value)

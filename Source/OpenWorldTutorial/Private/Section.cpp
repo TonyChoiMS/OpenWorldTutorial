@@ -30,7 +30,7 @@ ASection::ASection()
 	Trigger->SetBoxExtent(FVector(775.0f, 775.0f, 300.0f));
 	Trigger->SetupAttachment(RootComponent);
 	Trigger->SetRelativeLocation(FVector(0.0f, 0.0f, 250.0f));
-	Trigger->SetCollisionProfileName(TEXT("ABTrigger"));
+	Trigger->SetCollisionProfileName(TEXT("OWTTrigger"));
 
 	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ASection::OnTriggerBeginOverlap);
 
@@ -55,7 +55,7 @@ ASection::ASection()
 		NewGateTrigger->SetBoxExtent(FVector(100.0f, 100.0f, 300.0f));
 		NewGateTrigger->SetupAttachment(RootComponent, GateSocket);
 		NewGateTrigger->SetRelativeLocation(FVector(70.0f, 0.0f, 250.0f));
-		NewGateTrigger->SetCollisionProfileName(TEXT("ABTrigger"));
+		NewGateTrigger->SetCollisionProfileName(TEXT("OWTTrigger"));
 		GateTriggers.Add(NewGateTrigger);
 
 		NewGateTrigger->OnComponentBeginOverlap.AddDynamic(this, &ASection::OnGateTriggerBeginOverlap);
@@ -82,7 +82,7 @@ void ASection::SetState(ESectionState NewState)
 	switch (NewState)
 	{
 	case ESectionState::READY:
-		Trigger->SetCollisionProfileName(TEXT("ABTrigger"));
+		Trigger->SetCollisionProfileName(TEXT("OWTTrigger"));
 		for (UBoxComponent* GateTrigger : GateTriggers)
 		{
 			GateTrigger->SetCollisionProfileName(TEXT("NoCollision"));
@@ -113,7 +113,7 @@ void ASection::SetState(ESectionState NewState)
 		Trigger->SetCollisionProfileName(TEXT("NoCollision"));
 		for (UBoxComponent* GateTrigger : GateTriggers)
 		{
-			GateTrigger->SetCollisionProfileName(TEXT("ABTrigger"));
+			GateTrigger->SetCollisionProfileName(TEXT("OWTTrigger"));
 		}
 		OperateGates(true);
 		break;

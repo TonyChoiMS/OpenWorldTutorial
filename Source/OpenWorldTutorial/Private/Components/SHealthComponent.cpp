@@ -56,11 +56,11 @@ void USHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, 
 
 	if (bIsDead)
 	{
-		AOpenWorldGameMode* GM = Cast<AOpenWorldGameMode>(GetWorld()->GetAuthGameMode());
+		/*AOpenWorldGameMode* GM = Cast<AOpenWorldGameMode>(GetWorld()->GetAuthGameMode());
 		if (GM)
 		{
 			GM->OnActorKilled.Broadcast(GetOwner(), DamageCauser, InstigatedBy);
-		}
+		}*/
 	}
 }
 

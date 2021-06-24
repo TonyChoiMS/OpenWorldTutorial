@@ -2,7 +2,6 @@
 
 #include "OpenWorldGameMode.h"
 #include "SHealthComponent.h"
-#include "SGameState.h"
 #include "TimerManager.h"
 #include "MyCharacter.h"
 #include "OWTPlayerState.h"
@@ -11,14 +10,16 @@
 
 AOpenWorldGameMode::AOpenWorldGameMode()
 {
-	TimerBetweenWaves = 2.0f;
+	//TimerBetweenWaves = 2.0f;
 
 	PlayerStateClass = AOWTPlayerState::StaticClass();
 	GameStateClass = AOWTGameStateBase::StaticClass();
 	PlayerControllerClass = AMyPlayerController::StaticClass();
+	//DefaultPawnClass = AMyCharacter::StaticClass();
 
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 1.0f;
+	PrimaryActorTick.bCanEverTick = false;
+	//PrimaryActorTick.bCanEverTick = true;
+	//PrimaryActorTick.TickInterval = 1.0f;
 
 	static ConstructorHelpers::FClassFinder<APawn> BP_PAWN_C(TEXT("/Game/Character/Human/BP_WarriorCharacter"));
 	if (BP_PAWN_C.Succeeded())
@@ -29,142 +30,142 @@ AOpenWorldGameMode::AOpenWorldGameMode()
 	ScoreToClear = 2;
 }
 
-void AOpenWorldGameMode::StartWave()
-{
-	WaveCount++;
-
-	NrOfBotsToSpawn = 2 * WaveCount;
-
-	GetWorldTimerManager().SetTimer(TimerHandle_BotSpawner, this, &AOpenWorldGameMode::SpawnBotTimerElapsed, 1.0f, true, 0.0f);
-
-	SetWaveState(EWaveState::WaveInProgress);
-}
-
-
-void AOpenWorldGameMode::EndWave()
-{
-	GetWorldTimerManager().ClearTimer(TimerHandle_BotSpawner);
-
-	SetWaveState(EWaveState::WaitingToComplete);
-}
-
-void AOpenWorldGameMode::PrepareForNextWave()
-{
-	GetWorldTimerManager().SetTimer(TimerHandle_NextWaveStart, this, &AOpenWorldGameMode::StartWave, TimerBetweenWaves, false);
-
-	SetWaveState(EWaveState::WaitingToStart);
-
-	RestartDeadPlayers();
-}
-
-void AOpenWorldGameMode::CheckWaveState()
-{
-	bool bIsPreparingForWave = GetWorldTimerManager().IsTimerActive(TimerHandle_NextWaveStart);
-
-	if (NrOfBotsToSpawn > 0 || bIsPreparingForWave)
-	{
-		return;
-	}
-
-	bool bIsAnyBotAlive = false;
-
-	for (FConstPawnIterator It = GetWorld()->GetPawnIterator(); It; ++It)
-	{
-		APawn* TestPawn = It->Get();
-		if (TestPawn == nullptr || TestPawn->IsPlayerControlled())
-		{
-			continue;
-		}
-
-		USHealthComponent* HealthComp = Cast<USHealthComponent>(TestPawn->GetComponentByClass(USHealthComponent::StaticClass()));
-		if (HealthComp && HealthComp->GetHealth() > 0.0f)
-		{
-			bIsAnyBotAlive = true;
-			break;
-		}
-	}
-	
-	if (!bIsAnyBotAlive)
-	{
-		SetWaveState(EWaveState::WaveComplete);
-
-		PrepareForNextWave();
-	}
-}
-
-void AOpenWorldGameMode::CheckAnyPlayerAlive()
-{
-	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-	{
-		APlayerController* PC = It->Get();
-		if (PC && PC->GetPawn())
-		{
-			APawn* MyPawn = PC->GetPawn();
-			USHealthComponent* HealthComp = Cast<USHealthComponent>(MyPawn->GetComponentByClass(USHealthComponent::StaticClass()));
-			if (ensure(HealthComp) && HealthComp->GetHealth() > 0.0f)
-			{
-				// A Player is still alive
-				return;
-			}
-		}
-	}
-	
-	// NoPlayer alive
-	GameOver();
-}
-
-void AOpenWorldGameMode::GameOver()
-{
-	EndWave();
-
-	// @TODO :: Finish up the match, present 'game over' to players.
-
-	SetWaveState(EWaveState::GameOver);
-
-	UE_LOG(LogTemp, Log, TEXT("Game Over! Players Died"));
-}
-
-void AOpenWorldGameMode::SetWaveState(EWaveState NewState)
-{
-	/*if (ensureAlways(GameStateClass))
-	{
-		GameStateClass->SetWaveState(NewState);
-	}*/
-}
-
-void AOpenWorldGameMode::RestartDeadPlayers()
-{
-	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-	{
-		APlayerController* PC = It->Get();
-		if (PC && PC->GetPawn() == nullptr)
-		{
-			RestartPlayer(PC);
-		}
-	}
-}
+//void AOpenWorldGameMode::StartWave()
+//{
+//	WaveCount++;
+//
+//	NrOfBotsToSpawn = 2 * WaveCount;
+//
+//	GetWorldTimerManager().SetTimer(TimerHandle_BotSpawner, this, &AOpenWorldGameMode::SpawnBotTimerElapsed, 1.0f, true, 0.0f);
+//
+//	SetWaveState(EWaveState::WaveInProgress);
+//}
+//
+//
+//void AOpenWorldGameMode::EndWave()
+//{
+//	GetWorldTimerManager().ClearTimer(TimerHandle_BotSpawner);
+//
+//	SetWaveState(EWaveState::WaitingToComplete);
+//}
+//
+//void AOpenWorldGameMode::PrepareForNextWave()
+//{
+//	GetWorldTimerManager().SetTimer(TimerHandle_NextWaveStart, this, &AOpenWorldGameMode::StartWave, TimerBetweenWaves, false);
+//
+//	SetWaveState(EWaveState::WaitingToStart);
+//
+//	RestartDeadPlayers();
+//}
+//
+//void AOpenWorldGameMode::CheckWaveState()
+//{
+//	bool bIsPreparingForWave = GetWorldTimerManager().IsTimerActive(TimerHandle_NextWaveStart);
+//
+//	if (NrOfBotsToSpawn > 0 || bIsPreparingForWave)
+//	{
+//		return;
+//	}
+//
+//	bool bIsAnyBotAlive = false;
+//
+//	for (FConstPawnIterator It = GetWorld()->GetPawnIterator(); It; ++It)
+//	{
+//		APawn* TestPawn = It->Get();
+//		if (TestPawn == nullptr || TestPawn->IsPlayerControlled())
+//		{
+//			continue;
+//		}
+//
+//		USHealthComponent* HealthComp = Cast<USHealthComponent>(TestPawn->GetComponentByClass(USHealthComponent::StaticClass()));
+//		if (HealthComp && HealthComp->GetHealth() > 0.0f)
+//		{
+//			bIsAnyBotAlive = true;
+//			break;
+//		}
+//	}
+//	
+//	if (!bIsAnyBotAlive)
+//	{
+//		SetWaveState(EWaveState::WaveComplete);
+//
+//		PrepareForNextWave();
+//	}
+//}
+//
+//void AOpenWorldGameMode::CheckAnyPlayerAlive()
+//{
+//	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+//	{
+//		APlayerController* PC = It->Get();
+//		if (PC && PC->GetPawn())
+//		{
+//			APawn* MyPawn = PC->GetPawn();
+//			USHealthComponent* HealthComp = Cast<USHealthComponent>(MyPawn->GetComponentByClass(USHealthComponent::StaticClass()));
+//			if (ensure(HealthComp) && HealthComp->GetHealth() > 0.0f)
+//			{
+//				// A Player is still alive
+//				return;
+//			}
+//		}
+//	}
+//	
+//	// NoPlayer alive
+//	GameOver();
+//}
+//
+//void AOpenWorldGameMode::GameOver()
+//{
+//	EndWave();
+//
+//	// @TODO :: Finish up the match, present 'game over' to players.
+//
+//	SetWaveState(EWaveState::GameOver);
+//
+//	UE_LOG(LogTemp, Log, TEXT("Game Over! Players Died"));
+//}
+//
+//void AOpenWorldGameMode::SetWaveState(EWaveState NewState)
+//{
+//	/*if (ensureAlways(GameStateClass))
+//	{
+//		GameStateClass->SetWaveState(NewState);
+//	}*/
+//}
+//
+//void AOpenWorldGameMode::RestartDeadPlayers()
+//{
+//	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+//	{
+//		APlayerController* PC = It->Get();
+//		if (PC && PC->GetPawn() == nullptr)
+//		{
+//			RestartPlayer(PC);
+//		}
+//	}
+//}
 
 void AOpenWorldGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	OWTGameStateBase = Cast<AOWTGameStateBase>(GameState);
 }
-
-void AOpenWorldGameMode::StartPlay()
-{
-	Super::StartPlay();
-
-	PrepareForNextWave();
-}
-
-void AOpenWorldGameMode::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-
-	CheckWaveState();
-
-	CheckAnyPlayerAlive();
-}
+//
+//void AOpenWorldGameMode::StartPlay()
+//{
+//	Super::StartPlay();
+//
+//	PrepareForNextWave();
+//}
+//
+//void AOpenWorldGameMode::Tick(float DeltaSeconds)
+//{
+//	Super::Tick(DeltaSeconds);
+//
+//	CheckWaveState();
+//
+//	CheckAnyPlayerAlive();
+//}
 
 void AOpenWorldGameMode::PostLogin(APlayerController * NewPlayer)
 {
@@ -214,18 +215,18 @@ int32 AOpenWorldGameMode::GetScore() const
 	return OWTGameStateBase->GetTotalGameScore();
 }
 
-void AOpenWorldGameMode::SpawnNewBot()
-{
-}
-
-void AOpenWorldGameMode::SpawnBotTimerElapsed()
-{
-	SpawnNewBot();
-
-	NrOfBotsToSpawn--;
-
-	if (NrOfBotsToSpawn <= 0)
-	{
-		EndWave();
-	}
-}
+//void AOpenWorldGameMode::SpawnNewBot()
+//{
+//}
+//
+//void AOpenWorldGameMode::SpawnBotTimerElapsed()
+//{
+//	SpawnNewBot();
+//
+//	NrOfBotsToSpawn--;
+//
+//	if (NrOfBotsToSpawn <= 0)
+//	{
+//		EndWave();
+//	}
+//}
