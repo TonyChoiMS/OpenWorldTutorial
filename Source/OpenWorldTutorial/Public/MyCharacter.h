@@ -98,8 +98,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USHealthComponent* HealthComp;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USHealthComponent* HealthComp;*/
 
 	bool bWantsToZoom;
 
@@ -121,7 +121,7 @@ protected:
 	void OnHealthChanged(USHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	// Pawn died previously
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	bool bDied;
 
 	void SetControlMode(EControlMode NewControlMode);

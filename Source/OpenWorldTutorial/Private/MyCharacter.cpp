@@ -14,7 +14,7 @@
 #include "Components//WidgetComponent.h"
 #include "OpenWorldTutorial.h"
 #include "Net/UnrealNetwork.h"
-#include "SHealthComponent.h"
+//#include "SHealthComponent.h"
 #include "CharacterStatComponent.h"
 #include "ABWeapon.h"
 #include "MyAnimInstance.h"
@@ -34,14 +34,14 @@ AMyCharacter::AMyCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
-	HealthComp->OnHealthChanged.AddDynamic(this, &AMyCharacter::OnHealthChanged);
+	/*HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
+	HealthComp->OnHealthChanged.AddDynamic(this, &AMyCharacter::OnHealthChanged);*/
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->TargetArmLength = 400.0f;
 	SpringArmComp->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
-	SpringArmComp->SetupAttachment(RootComponent);
+	SpringArmComp->SetupAttachment(GetCapsuleComponent());
 	CharacterStat = CreateDefaultSubobject<UCharacterStatComponent>(TEXT("CharacterStat"));
 	HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBARWIDGET"));
 	
@@ -92,31 +92,134 @@ AMyCharacter::AMyCharacter()
 	SetActorHiddenInGame(true);
 	HPBarWidget->SetHiddenInGame(true);
 
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_CARDBOARD(TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard"));
+
+	if (SK_CARDBOARD.Succeeded())
+	{
+		GetMesh()->SetSkeletalMesh(SK_CARDBOARD.Object);
+	}
+
 	// Setting AnimBP
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> WARRIOR_ANIM(TEXT("/Game/Character/Human/BPA_WarriorCharacter"));
-
+	static ConstructorHelpers::FClassFinder<UMyAnimInstance> WARRIOR_ANIM(TEXT("/Game/Character/Human/BPA_WarriorCharacter.BPA_WarriorCharacter_C"));
+	
 	if (WARRIOR_ANIM.Succeeded())
 	{
+		ABLOG(Warning, TEXT("WARRIOR_ANIM.Succeeded() == true"));
 		GetMesh()->SetAnimInstanceClass(WARRIOR_ANIM.Class);
 	}
+	else
+	{
+		ABLOG(Warning, TEXT("WARRIOR_ANIM.Succeeded() == false"));
+	}
+
+	GetCharacterMovement()->JumpZVelocity = 800.0f;
 
 	SetControlMode(EControlMode::DIABLO);
-
-	//bCanBeDamaged = false;		엔진 업데이트에 따라 해당 변수가 private이 됨.
-
-	/*auto OWTPlayerState = Cast<AOWTPlayerState>(GetPlayerState());
-	ABCHECK(nullptr != OWTPlayerState);
-	CharacterStat->SetNewLevel(OWTPlayerState->GetCharacterLevel());*/
-
-	//CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
-	//ABCHECK(nullptr != CharacterWidget);
-	//CharacterWidget->BindCharacterStat(CharacterStat);
 
 	DeadTimer = 5.0f;
 
 	ABLOG(Warning, TEXT("AMyCharacter()"));
+}
+
+// Called when the game starts or when spawned
+void AMyCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	DefaultFOV = CameraComp->FieldOfView;
+
+	bIsPlayer = IsPlayerControlled();
+
+	auto DefaultSetting = GetDefault<UABCharacterSetting>();
+
+	if (bIsPlayer)
+	{
+
+		MyPlayerController = Cast<AMyPlayerController>(GetController());
+		ABCHECK(nullptr != MyPlayerController);
+
+		auto OWTPlayerState = Cast<AOWTPlayerState>(GetPlayerState());
+		ABCHECK(nullptr != OWTPlayerState);
+
+		AssetIndex = OWTPlayerState->GetCharacterIndex();
+	}
+	else
+	{
+		MonsterAIController = Cast<AMonsterAIController>(GetController());
+		ABCHECK(nullptr != MonsterAIController);
+
+		AssetIndex = FMath::RandRange(0, DefaultSetting->CharacterAssets.Num() - 1);
+	}
+
+	CharacterAssetToLoad = DefaultSetting->CharacterAssets[AssetIndex];
+
+	auto OpenWorldGameInstance = Cast<UOpenWorldGameInstance>(GetGameInstance());
+	ABCHECK(nullptr != OpenWorldGameInstance);
+	AssetStreamingHandle = OpenWorldGameInstance->StreamableManager.RequestAsyncLoad(CharacterAssetToLoad, FStreamableDelegate::CreateUObject(this, &AMyCharacter::OnAssetLoadCompleted));
+	SetCharacterState(ECharacterState::LOADING);
+}
+
+void AMyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	ABAnim = Cast<UMyAnimInstance>(GetMesh()->GetAnimInstance());
+	ABCHECK(nullptr != ABAnim);
+
+	ABAnim->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackMontageEnded);
+
+	ABAnim->OnNextAttackCheck.AddLambda([this]() -> void {
+
+		ABLOG(Warning, TEXT("OnNextAttackCheck"));
+		CanNextCombo = false;
+
+		if (IsComboInputOn)
+		{
+			AttackStartComboState();
+			ABAnim->JumpToAttackMontageSection(CurrentCombo);
+		}
+	});
+
+	ABAnim->OnAttackHitCheck.AddUObject(this, &AMyCharacter::AttackCheck);
+
+	CharacterStat->OnHPIsZero.AddLambda([this]() -> void {
+		ABLOG(Warning, TEXT("OnHPIsZero"));
+		ABAnim->SetDeadAnim();
+		SetActorEnableCollision(false);
+		SetCharacterState(ECharacterState::DEAD);
+	});
+}
+
+
+// Called every frame
+void AMyCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	SpringArmComp->TargetArmLength = FMath::FInterpTo(SpringArmComp->TargetArmLength, ArmLengthTo, DeltaTime, ArmLengthSpeed);
+
+	switch (CurrentControlMode)
+	{
+	case EControlMode::DIABLO:
+		SpringArmComp->SetRelativeRotation(FMath::RInterpTo(SpringArmComp->GetRelativeRotation(), ArmRotationTo, DeltaTime, ArmRotationSpeed));
+		if (DirectionToMove.SizeSquared() > 0.0f)
+		{
+			MyPlayerController->SetControlRotation(FRotationMatrix::MakeFromX(DirectionToMove).Rotator());
+			//GetController()->SetControlRotation();
+			AddMovementInput(DirectionToMove);
+		}
+		break;
+
+	case EControlMode::GTA:
+		float TargetFOV = bWantsToZoom ? ZoomedFOV : DefaultFOV;
+
+		float NewFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
+
+		CameraComp->SetFieldOfView(NewFOV);
+		break;
+	}
 }
 
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
@@ -130,6 +233,10 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 		if (bIsPlayer)
 		{
 			DisableInput(MyPlayerController);
+
+			auto ABPlayerState = Cast<AOWTPlayerState>(GetPlayerState());
+			ABCHECK(nullptr != ABPlayerState);
+			CharacterStat->SetNewLevel(ABPlayerState->GetCharacterLevel());
 		}
 		else
 		{
@@ -149,11 +256,9 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 		SetActorHiddenInGame(false);
 		HPBarWidget->SetHiddenInGame(false);
 
-		CharacterStat->OnHPIsZero.AddLambda([this]() -> void
-		{
-			SetCharacterState(ECharacterState::DEAD);
-			SetActorEnableCollision(false);
-		});
+		auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+		ABCHECK(nullptr != CharacterWidget);
+		CharacterWidget->BindCharacterStat(CharacterStat);
 		
 		if (bIsPlayer)
 		{
@@ -161,7 +266,7 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 			GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 			EnableInput(MyPlayerController);
 
-			MyPlayerController->GetHUDWidget()->BindCharacterStat(CharacterStat);
+			//MyPlayerController->GetHUDWidget()->BindCharacterStat(CharacterStat);
 		}
 		else
 		{
@@ -169,18 +274,18 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 			GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 			MonsterAIController->RunAI();
 
-			auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+			/*auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
 			ABCHECK(nullptr != CharacterWidget)
 				if (nullptr != CharacterWidget)
 				{
 					CharacterWidget->BindCharacterStat(CharacterStat);
-				}
+				}*/
 		}
 		break;
 	}
 		
 	case ECharacterState::DEAD:
-		SetActorEnableCollision(false);
+		//SetActorEnableCollision(false);
 		GetMesh()->SetHiddenInGame(false);
 		HPBarWidget->SetHiddenInGame(true);
 		ABAnim->SetDeadAnim();
@@ -230,123 +335,6 @@ float AMyCharacter::GetFinalAttackDamage() const
 		CharacterStat->GetAttack();
 	float AttackModifier = (nullptr != CurrentWeapon) ? CurrentWeapon->GetAttackModifier() : 1.0f;
 	return AttackDamage * AttackModifier;
-}
-
-// Called when the game starts or when spawned
-void AMyCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	DefaultFOV = CameraComp->FieldOfView;
-
-	if (GetLocalRole() == ROLE_Authority)
-	{
-		// Spawn a default weapon
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		FName WeaponSocket(TEXT("hand_rSocket"));
-		
-		auto CurWeapon = GetWorld()->SpawnActor<AABWeapon>(FVector::ZeroVector, FRotator::ZeroRotator);
-		if (nullptr != CurWeapon)
-		{
-			CurWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
-		}
-	}
-
-	bIsPlayer = IsPlayerControlled();
-
-	auto DefaultSetting = GetDefault<UABCharacterSetting>();
-
-	if (bIsPlayer)
-	{
-		
-		MyPlayerController = Cast<AMyPlayerController>(GetController());
-		ABCHECK(nullptr != MyPlayerController);
-
-		auto OWTPlayerState = Cast<AOWTPlayerState>(GetPlayerState());
-		ABCHECK(nullptr != OWTPlayerState);
-
-		AssetIndex = OWTPlayerState->GetCharacterIndex();
-	}
-	else
-	{
-		MonsterAIController = Cast<AMonsterAIController>(GetController());
-		ABCHECK(nullptr != MonsterAIController);
-
-		AssetIndex = FMath::RandRange(0, DefaultSetting->CharacterAssets.Num() - 1);
-	}
-
-	CharacterAssetToLoad = DefaultSetting->CharacterAssets[AssetIndex];
-
-	auto OpenWorldGameInstance = Cast<UOpenWorldGameInstance>(GetGameInstance());
-	ABCHECK(nullptr != OpenWorldGameInstance);
-	AssetStreamingHandle = OpenWorldGameInstance->StreamableManager.RequestAsyncLoad(CharacterAssetToLoad, FStreamableDelegate::CreateUObject(this, &AMyCharacter::OnAssetLoadCompleted));
-	SetCharacterState(ECharacterState::LOADING);
-
-	ABAnim = Cast<UMyAnimInstance>(GetMesh()->GetAnimInstance());
-	ABCHECK(nullptr != ABAnim);
-
-	ABAnim->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackMontageEnded);
-
-	ABAnim->OnNextAttackCheck.AddLambda([this]() -> void {
-		CanNextCombo = false;
-
-		if (IsComboInputOn)
-		{
-			AttackStartComboState();
-			ABAnim->JumpToAttackMontageSection(CurrentCombo);
-		}
-	});
-
-	ABAnim->OnAttackHitCheck.AddUObject(this, &AMyCharacter::AttackCheck);
-}
-
-// Called every frame
-void AMyCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	SpringArmComp->TargetArmLength = FMath::FInterpTo(SpringArmComp->TargetArmLength, ArmLengthTo, DeltaTime, ArmLengthSpeed);
-
-	switch (CurrentControlMode)
-	{
-	case EControlMode::DIABLO:
-		SpringArmComp->SetRelativeRotation(FMath::RInterpTo(SpringArmComp->GetRelativeRotation(), ArmRotationTo, DeltaTime, ArmRotationSpeed));
-		if (DirectionToMove.SizeSquared() > 0.0f)
-		{
-			MyPlayerController->SetControlRotation(FRotationMatrix::MakeFromX(DirectionToMove).Rotator());
-			//GetController()->SetControlRotation();
-			AddMovementInput(DirectionToMove);
-		}
-		break;
-
-	case EControlMode::GTA:
-		float TargetFOV = bWantsToZoom ? ZoomedFOV : DefaultFOV;
-
-		float NewFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
-
-		CameraComp->SetFieldOfView(NewFOV);
-		break;
-	}
-}
-
-void AMyCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	ABCHECK(nullptr != HPBarWidget);
-	// UserWidget이 초기화되지 않았을 경우 GetUserWidgetObject()이 null을 반환하는 케이스가 생기기 때문에
-	// 캐스팅 하기 전에 InitWidget()을 호출해서 정상적으로 캐스팅 되도록 추가.
-	HPBarWidget->InitWidget();
-	
-	ABLOG(Warning, TEXT("PostInitializeComponents()"));
-	auto CharacterWidget = Cast<UCharacterWidget>(HPBarWidget->GetUserWidgetObject());
-	ABCHECK(nullptr != CharacterWidget)
-	if (nullptr != CharacterWidget)
-	{
-		CharacterWidget->BindCharacterStat(CharacterStat);
-	}
 }
 
 void AMyCharacter::MoveForward(float value)
@@ -455,21 +443,22 @@ void AMyCharacter::AttackSkill()
 	ABAnim->PlayAttackMontage2();
 }
 
+// 삭제 예정 함수.
 void AMyCharacter::OnHealthChanged(USHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
-	if (Health <= 0.0f && !bDied)
-	{
-		// Die!
-		bDied = true;
+	//if (Health <= 0.0f && !bDied)
+	//{
+	//	// Die!
+	//	bDied = true;
 
-		GetMovementComponent()->StopMovementImmediately();
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//	GetMovementComponent()->StopMovementImmediately();
+	//	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		DetachFromControllerPendingDestroy();
+	//	DetachFromControllerPendingDestroy();
 
-		SetLifeSpan(10.0f);
-	}
+	//	SetLifeSpan(10.0f);
+	//}
 }
 
 void AMyCharacter::SetControlMode(EControlMode NewControlMode)
@@ -590,11 +579,16 @@ void AMyCharacter::AttackCheck()
 
 void AMyCharacter::OnAssetLoadCompleted()
 {
-	AssetStreamingHandle->ReleaseHandle();
+	/*AssetStreamingHandle->ReleaseHandle();
 
 	TSoftObjectPtr<USkeletalMesh> LoadedAssetPath(CharacterAssetToLoad);
 	ABCHECK(LoadedAssetPath.IsValid());
-	GetMesh()->SetSkeletalMesh(LoadedAssetPath.Get());
+	GetMesh()->SetSkeletalMesh(LoadedAssetPath.Get());*/
+	USkeletalMesh* AssetLoaded = Cast<USkeletalMesh>(AssetStreamingHandle->GetLoadedAsset());
+	AssetStreamingHandle.Reset();
+	ABCHECK(nullptr != AssetLoaded);
+	GetMesh()->SetSkeletalMesh(AssetLoaded);
+
 	SetCharacterState(ECharacterState::READY);
 }
 
@@ -644,9 +638,9 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 		if (EventInstigator->IsPlayerController())
 		{
 			// TODO:: 코드 재 확인할 필요성이 있음.
-			auto MyPC = Cast<AMyPlayerController>(EventInstigator);
-			ABCHECK(nullptr != MyPC, 0.0f);
-			MyPC->NPCKill(this);
+			auto instigator = Cast<AMyPlayerController>(EventInstigator);
+			ABCHECK(nullptr != instigator, 0.0f);
+			instigator->NPCKill(this);
 		}
 	}
 
@@ -677,12 +671,3 @@ void AMyCharacter::SetWeapon(AABWeapon * NewWeapon)
 		CurrentWeapon = NewWeapon;
 	}
 }
-
-void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	//DOREPLIFETIME(AMyCharacter, CurrentWeapon);
-	DOREPLIFETIME(AMyCharacter, bDied);
-}
-

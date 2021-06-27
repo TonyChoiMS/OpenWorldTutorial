@@ -41,7 +41,7 @@ void AMyPlayerController::PostInitializeComponents()
 void AMyPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	InputComponent->BindAction(TEXT("GAmePause"), EInputEvent::IE_Pressed, this, &AMyPlayerController::OnGamePause);
+	InputComponent->BindAction(TEXT("GamePause"), EInputEvent::IE_Pressed, this, &AMyPlayerController::OnGamePause);
 }
 
 UHUDWidget * AMyPlayerController::GetHUDWidget() const

@@ -17,8 +17,8 @@ void UCharacterWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	HPPProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("PB_HPBar")));
-	//ABCHECK(nullptr != HPPProgressBar);
-	//UpdateHPWidget();
+	ABCHECK(nullptr != HPPProgressBar);
+	UpdateHPWidget();
 }
 
 void UCharacterWidget::UpdateHPWidget()
