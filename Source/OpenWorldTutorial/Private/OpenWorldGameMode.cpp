@@ -7,6 +7,7 @@
 #include "OWTPlayerState.h"
 #include "OWTGameStateBase.h"
 #include "MyPlayerController.h"
+#include "HUDWidget.h"
 
 AOpenWorldGameMode::AOpenWorldGameMode()
 {
@@ -15,6 +16,13 @@ AOpenWorldGameMode::AOpenWorldGameMode()
 	PlayerStateClass = AOWTPlayerState::StaticClass();
 	GameStateClass = AOWTGameStateBase::StaticClass();
 	PlayerControllerClass = AMyPlayerController::StaticClass();
+	HUDClass = UHUDWidget::StaticClass();
+	/*static ConstructorHelpers::FClassFinder<AHUD> HUD_CLASS_C(TEXT("/Game/BP/UI/Adventure_HUD"));
+	if (HUD_CLASS_C.Succeeded())
+	{
+		HUDClass = HUD_CLASS_C.Class;
+	}*/
+	
 	//DefaultPawnClass = AMyCharacter::StaticClass();
 
 	PrimaryActorTick.bCanEverTick = false;

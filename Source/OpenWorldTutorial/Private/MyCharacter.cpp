@@ -77,7 +77,7 @@ AMyCharacter::AMyCharacter()
 
 	HPBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
 	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
-	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("/Game/UI/WBP_HealthIndicator.WBP_HealthIndicator_C"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("/Game/UI/WBP_HealthIndicator"));
 
 	if (UI_HUD.Succeeded())
 	{
@@ -92,7 +92,7 @@ AMyCharacter::AMyCharacter()
 	SetActorHiddenInGame(true);
 	HPBarWidget->SetHiddenInGame(true);
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_CARDBOARD(TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_CARDBOARD(TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard"));
 
 	if (SK_CARDBOARD.Succeeded())
 	{
@@ -102,7 +102,7 @@ AMyCharacter::AMyCharacter()
 	// Setting AnimBP
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 
-	static ConstructorHelpers::FClassFinder<UMyAnimInstance> WARRIOR_ANIM(TEXT("/Game/Character/Human/BPA_WarriorCharacter.BPA_WarriorCharacter_C"));
+	static ConstructorHelpers::FClassFinder<UMyAnimInstance> WARRIOR_ANIM(TEXT("/Game/Character/Human/BPA_WarriorCharacter"));
 	
 	if (WARRIOR_ANIM.Succeeded())
 	{
