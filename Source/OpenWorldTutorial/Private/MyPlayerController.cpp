@@ -12,20 +12,20 @@
 
 AMyPlayerController::AMyPlayerController()
 {
-	static ConstructorHelpers::FClassFinder<UHUDWidget> UI_HUD_C(TEXT("/Game/UI/UI_HUD.UI_HUD_C"));
+	static ConstructorHelpers::FClassFinder<UHUDWidget> UI_HUD_C(TEXT("/Game/UI/UI_HUD"));
 
 	if (UI_HUD_C.Succeeded())
 	{
 		HUDWidgetClass = UI_HUD_C.Class;
 	}
 
-	static ConstructorHelpers::FClassFinder<UGamePlayWidget> UI_MENU_C(TEXT("/Game/UI/UI_Menu.UI_Menu_C"));
+	static ConstructorHelpers::FClassFinder<UGamePlayWidget> UI_MENU_C(TEXT("/Game/UI/UI_Menu"));
 	if (UI_MENU_C.Succeeded())
 	{
 		MenuWidgetClass = UI_MENU_C.Class;
 	}
 
-	static ConstructorHelpers::FClassFinder<UGamePlayWidget> UI_RESULT_C(TEXT("/Game/UI/UI_Result.UI_Result_C"));
+	static ConstructorHelpers::FClassFinder<UGamePlayWidget> UI_RESULT_C(TEXT("/Game/UI/UI_Result"));
 	if (UI_RESULT_C.Succeeded())
 	{
 		ResultWidgetClass = UI_RESULT_C.Class;
