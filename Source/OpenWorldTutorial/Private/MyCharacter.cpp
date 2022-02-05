@@ -77,7 +77,7 @@ AMyCharacter::AMyCharacter()
 
 	HPBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
 	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
-	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("/Game/UI/WBP_HealthIndicator"));
+	static ConstructorHelpers::FClassFinder<UCharacterWidget> UI_HUD(TEXT("/Game/BP/UI/WBP_HealthIndicator"));
 
 	if (UI_HUD.Succeeded())
 	{

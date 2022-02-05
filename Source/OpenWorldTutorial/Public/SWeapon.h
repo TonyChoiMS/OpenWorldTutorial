@@ -9,7 +9,7 @@
 class USkeletalMeshComponent;
 class UDamageType;
 class UParticleSystem;
-class UMatineeCameraShake;
+//class UMatineeCameraShake;
 //class FTimerHandle;
 
 // Contains infromation of a single hitscan weapon linetrace
@@ -66,8 +66,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* TracerEffect;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<UMatineeCameraShake> FireCamShake;
+	/*UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<UMatineeCameraShake> FireCamShake;*/
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float BaseDamage;
