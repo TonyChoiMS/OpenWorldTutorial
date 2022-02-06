@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "TCGameSettingModule",
+	"Description": "Game Setting Module Plugin!",
+	"Category": "Other",
+	"CreatedBy": "TonyChoi",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "TCGameSettingModule",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
