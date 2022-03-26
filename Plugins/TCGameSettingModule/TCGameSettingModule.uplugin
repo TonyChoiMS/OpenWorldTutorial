@@ -4,7 +4,7 @@
 	"VersionName": "1.0",
 	"FriendlyName": "TCGameSettingModule",
 	"Description": "Game Setting Module Plugin!",
-	"Category": "Other",
+	"Category": "Settings",
 	"CreatedBy": "TonyChoi",
 	"CreatedByURL": "",
 	"DocsURL": "",
@@ -13,12 +13,17 @@
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
-	"Installed": false,
+	"Installed": true,
 	"Modules": [
 		{
 			"Name": "TCGameSettingModule",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PreDefault"
+		},
+		{
+			"Name": "TCGameSettingsCore",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault"
 		}
 	]
 }

@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleManager.h"
 
-class FTCGameSettingModuleModule : public IModuleInterface
+class TCGameSettingModule : public IModuleInterface
 {
 public:
 

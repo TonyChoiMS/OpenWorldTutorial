@@ -26,8 +26,14 @@ public class TCGameSettingModule : ModuleRules
 			new string[]
 			{
 				"Core",
-				"DeveloperSettings",
-				// ... add other public dependencies that you statically link with here ...
+				"CoreUObject",
+				"Engine",
+				"InputCore",
+				"UMG",
+				"Slate",
+				"SlateCore",
+				"GameplayTags",
+				"DeveloperSettings"
 			}
 			);
 			
@@ -35,11 +41,7 @@ public class TCGameSettingModule : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
-				// ... add private dependencies that you statically link with here ...	
+				
 			}
 			);
 		
