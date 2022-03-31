@@ -24,6 +24,11 @@
 			"Name": "TCGameSettingsCore",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault"
+		},
+		{
+			"Name": "TCGameSettingsInput",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault"
 		}
 	]
 }
