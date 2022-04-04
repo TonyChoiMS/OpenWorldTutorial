@@ -1,40 +1,23 @@
-//#pragma once
-//
-//#include "CoreMinimal.h"
-//#include "UObject/Interface.h"
-//#include "ITCGameSettingsInputConfig.generated.h"
-//
-//struct FKey;
-//struct FInputMappingPreset;
-//struct FKeyGroup;
-//struct FGameplayTag;
-//
-//UINTERFACE()
-//class UITCGameSettingsInputConfig : public UInterface
-//{
-//	GENERATED_BODY()
-//};
-//
-//// Interface to access input config
-//class TCGAMESETTINGSINPUT_API ITCGameSettingsInputConfig
-//{
-//	GENERATED_BODY()
-//
-//public:
-//	virtual bool ShouldAllowMultipleBindingsPerKey() const = 0;
-//
-//	virtual bool ShouldBindingsBeUniqueBetweenMappingGroups(int32 MappingGroupA, int32 MappingGroupB) const = 0;
-//
-//	virtual FInputMappingPreset GetInputPresetByTag(FGameplayTag PresetTag) const = 0;
-//	virtual TArray<FName> GetPreservedActions() const = 0;
-//	virtual TArray<FName> GetPreservedAxes() const = 0;
-//	virtual const TArray<FKeyGroup>& GetKeyGroups() const = 0;
-//	virtual FGameplayTag GetKeyGroupOfKey(FKey Key) const = 0;
-//
-//	// 이미 키가 Defined되있을 경우 True 반환
-//	virtual bool IsKeyGroupDefined(FGameplayTag KeyGroupTag) const = 0;
-//
-//	// Axis 키인경우 True 반환
-//	virtual bool IsAxisKEy(FKey Key) const = 0;
-//};
-//
+
+#pragma once
+
+#include "TCGameSettingsInputConfigInterface.h"
+#include "GameplayTagContainer.h"
+#include "Engine/DeveloperSettings.h"
+#include "GameFramework/PlayerInput.h"
+#include "InputMappingPreset.h"
+#include "Engine/Texture.h"
+#include "TCGameSettingsInputConfig.generated.h"
+
+USTRUCT()
+struct FKeyIconPair
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FKey Key_DEPRECATED;
+
+	UPROPERTY()
+	UTexture* Icon_DEPRETACTED = nullptr;
+}
+
