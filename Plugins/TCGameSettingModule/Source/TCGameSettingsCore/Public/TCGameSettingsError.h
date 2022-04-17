@@ -7,7 +7,7 @@
 /**
  * 
  */
-class TCGAMESETTINGSCORE_API TCGameSettingsError
+class TCGAMESETTINGSCORE_API FTCGameSettingsError
 {
 public:
 	static void LogError(const FString& Message);

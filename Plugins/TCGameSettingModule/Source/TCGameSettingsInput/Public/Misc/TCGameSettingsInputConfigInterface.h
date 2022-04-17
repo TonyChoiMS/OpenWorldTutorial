@@ -35,6 +35,6 @@ public:
 	virtual bool IsKeyGroupDefined(FGameplayTag KeyGroupTag) const = 0;
 
 	// Axis 키인경우 True 반환
-	virtual bool IsAxisKEy(FKey Key) const = 0;
+	virtual bool IsAxisKey(FKey Key) const = 0;
 };
 

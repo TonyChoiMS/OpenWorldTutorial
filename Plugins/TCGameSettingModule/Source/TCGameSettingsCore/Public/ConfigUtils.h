@@ -7,7 +7,7 @@
 /**
  * 
  */
-class TCGAMESETTINGSCORE_API ConfigUtils
+class TCGAMESETTINGSCORE_API FConfigUtils
 {
 public:
 	static void MigrateConfigPropertiesFromSection(UObject* Object, FString OldSection);

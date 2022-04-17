@@ -5,7 +5,7 @@
 #include "UObject/UnrealType.h"
 #include "Misc/ConfigCacheIni.h"
 
-void ConfigUtils::MigrateConfigPropertiesFromSection(UObject* Object, FString OldSectionName)
+void FConfigUtils::MigrateConfigPropertiesFromSection(UObject* Object, FString OldSectionName)
 {
 	const bool bDefaultConfig = Object->GetClass()->HasAnyClassFlags(CLASS_DefaultConfig);
 	const FString FileName = bDefaultConfig ? Object->GetDefaultConfigFilename() : Object->GetClass()->GetConfigName();
